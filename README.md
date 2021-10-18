@@ -7,7 +7,7 @@
 [![codecov](https://codecov.io/gh/datalogix/laravel-validation/branch/main/graph/badge.svg)](https://codecov.io/gh/datalogix/laravel-validation)
 [![License](https://poser.pugx.org/datalogix/laravel-validation/license)](https://packagist.org/packages/datalogix/laravel-validation)
 
-> Laravel Validation is a package the power of Respect Validation.
+> Laravel Validation is a package the power of [Respect Validation](https://respect-validation.readthedocs.io).
 
 ## Installation
 

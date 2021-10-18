@@ -184,7 +184,7 @@ class ValidationTest extends TestCase
         $this->expectException(\BadMethodCallException::class);
 
         $validation = $this->validate([
-            'age' => 20
+            'age' => 20,
         ], [
             'age' => ['int', 'foobar:20'],
         ]);
