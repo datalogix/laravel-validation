@@ -186,7 +186,7 @@ class ValidationTest extends TestCase
         $validation = $this->validate([
             'age' => 20
         ], [
-            'age' => ['int', 'foobar:20']
+            'age' => ['int', 'foobar:20'],
         ]);
 
         $validation->validate();
