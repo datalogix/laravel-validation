@@ -70,7 +70,7 @@ class ValidationTest extends TestCase
             'vimeo'             => ['videoUrl:vimeo'],
             'video1'            => ['videoUrl'],
             'video2'            => ['videoUrl'],
-            'email'             => ['email:rfc,dns'],
+            'email'             => ['email'],
             'age'               => ['minAge:18', 'maxAge:60'],
             'state'             => ['subdivisionCode:BR'],
         ];
