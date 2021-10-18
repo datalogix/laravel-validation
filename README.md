@@ -3,7 +3,7 @@
 [![Latest Stable Version](https://poser.pugx.org/datalogix/laravel-validation/version)](https://packagist.org/packages/datalogix/laravel-validation)
 [![Total Downloads](https://poser.pugx.org/datalogix/laravel-validation/downloads)](https://packagist.org/packages/datalogix/laravel-validation)
 [![tests](https://github.com/datalogix/laravel-validation/workflows/tests/badge.svg)](https://github.com/datalogix/laravel-validation/actions)
-[![StyleCI](https://github.styleci.io/repos/304879300/shield?style=flat)](https://github.styleci.io/repos/304879300)
+[![StyleCI](https://github.styleci.io/repos/418647775/shield?style=flat)](https://github.styleci.io/repos/418647775)
 [![codecov](https://codecov.io/gh/datalogix/laravel-validation/branch/main/graph/badge.svg)](https://codecov.io/gh/datalogix/laravel-validation)
 [![License](https://poser.pugx.org/datalogix/laravel-validation/license)](https://packagist.org/packages/datalogix/laravel-validation)
 
