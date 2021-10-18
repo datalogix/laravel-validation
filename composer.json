@@ -1,0 +1,55 @@
+{
+    "name": "datalogix/laravel-validation",
+    "description": "Laravel Validation is a package the power of Respect Validation.",
+    "keywords": [
+        "laravel",
+        "validation",
+        "respect",
+        "rules"
+    ],
+    "homepage": "https://github.com/datalogix/laravel-validation",
+    "license": "MIT",
+    "type": "library",
+    "authors": [
+        {
+            "name": "Ricardo Gobbo de Souza",
+            "email": "ricardogobbosouza@yahoo.com.br"
+        }
+    ],
+    "require": {
+        "php": "^7.2|^8.0",
+        "illuminate/support": "^7.0|^8.0",
+        "respect/validation": "^2.1"
+    },
+    "require-dev": {
+        "graham-campbell/testbench": "^5.6",
+        "phpunit/phpunit": "^8.0|^9.0",
+        "spatie/phpunit-watcher": "^1.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Datalogix\\Validation\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Datalogix\\Validation\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "vendor/bin/phpunit",
+        "watch": "vendor/bin/phpunit-watcher watch"
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Datalogix\\Validation\\ValidationServiceProvider"
+            ]
+        }
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
