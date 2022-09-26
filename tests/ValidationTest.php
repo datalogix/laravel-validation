@@ -100,7 +100,7 @@ class ValidationTest extends TestCase
             'even'              => 8,
             'floatVal'          => 9.8,
             'graph'             => 'LKM@#$%4;',
-            'instance'          => new \Datetime(),
+            'instance'          => new \DateTime(),
             'int'               => 9,
             'json'              => '{"file":"laravel.php"}',
             'leapDate'          => '1988-02-29',
