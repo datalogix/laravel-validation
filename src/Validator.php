@@ -17,4 +17,24 @@ final class Validator extends BaseValidator
             return parent::__call($method, $parameters);
         }
     }
+
+    /**
+     * Replace all error message place-holders with actual values.
+     *
+     * @param  string  $message
+     * @param  string  $attribute
+     * @param  string  $rule
+     * @param  array  $parameters
+     * @return string
+     */
+    public function makeReplacements($message, $attribute, $rule, $parameters)
+    {
+        $message = parent::makeReplacements($message, $attribute, $rule, $parameters);
+
+        return str_replace(
+            [':values', ':value', ':min', ':max'],
+            [implode(', ', $parameters), $parameters[0] ?? '', $parameters[0] ?? '', $parameters[1] ?? ''],
+            $message
+        );
+    }
 }
