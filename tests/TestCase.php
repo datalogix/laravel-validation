@@ -12,7 +12,7 @@ abstract class TestCase extends AbstractPackageTestCase
      *
      * @return string
      */
-    protected function getServiceProviderClass()
+    protected static function getServiceProviderClass(): string
     {
         return ValidationServiceProvider::class;
     }
