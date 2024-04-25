@@ -54,4 +54,4 @@ jobs:
         run: vendor/bin/phpunit
 
       - name: Coverage
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v3
