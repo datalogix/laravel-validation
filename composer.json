@@ -24,8 +24,7 @@
     "require-dev": {
         "graham-campbell/testbench": "^6.1",
         "mockery/mockery": "^1.6",
-        "phpunit/phpunit": "^9.5|^10.5|^11.0",
-        "spatie/phpunit-watcher": "^1.23"
+        "phpunit/phpunit": "^9.5|^10.5"
     },
     "autoload": {
         "psr-4": {
@@ -38,8 +37,7 @@
         }
     },
     "scripts": {
-        "test": "vendor/bin/phpunit",
-        "watch": "vendor/bin/phpunit-watcher watch"
+        "test": "vendor/bin/phpunit"
     },
     "extra": {
         "laravel": {
