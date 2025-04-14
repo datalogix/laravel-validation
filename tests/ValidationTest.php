@@ -6,7 +6,7 @@ use Illuminate\Support\MessageBag;
 
 class ValidationTest extends TestCase
 {
-    public function testCommonRules()
+    public function test_common_rules()
     {
         $rules = [
             'cpf' => ['cpf'],
@@ -100,7 +100,7 @@ class ValidationTest extends TestCase
             'even' => 8,
             'floatVal' => 9.8,
             'graph' => 'LKM@#$%4;',
-            'instance' => new \DateTime(),
+            'instance' => new \DateTime,
             'int' => 9,
             'json' => '{"file":"laravel.php"}',
             'leapDate' => '1988-02-29',
@@ -113,7 +113,7 @@ class ValidationTest extends TestCase
             'noWhitespace' => 'laravelBrazil',
             'nullValue' => null,
             'numeric' => '179.9',
-            'objectType' => new \stdClass(),
+            'objectType' => new \stdClass,
             'odd' => 3,
             'perfectSquare' => 25,
             'positive' => 1,
@@ -145,7 +145,7 @@ class ValidationTest extends TestCase
         $this->assertEmpty($validation->errors());
     }
 
-    public function testCustomMessage()
+    public function test_custom_message()
     {
         $rules = ['number' => ['required', 'floatType']];
         $data = ['number' => 9];
@@ -157,7 +157,7 @@ class ValidationTest extends TestCase
         $this->assertEquals('The number field must be a float.', $validation->errors()->first());
     }
 
-    public function testLaravelRule()
+    public function test_laravel_rule()
     {
         $validation = $this->validate([
             'distinct' => [
@@ -179,7 +179,7 @@ class ValidationTest extends TestCase
         $this->assertFalse($validation->passes());
     }
 
-    public function testInvalidRule(): void
+    public function test_invalid_rule(): void
     {
         $this->expectException(\BadMethodCallException::class);
 
