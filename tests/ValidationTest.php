@@ -88,7 +88,7 @@ class ValidationTest extends TestCase
             'digit' => '120129 21212',
             'alpha' => 'banana',
             'containsArray' => ['www', 'banana', 'jfk', 'http'],
-            'contains' => 'www banana jfk http',
+            'contains' => ['www', 'banana', 'jfk', 'http'],
             'countryCode' => 'BR',
             'creditCard' => '5555666677778884',
             'domain' => 'google.com.br',
