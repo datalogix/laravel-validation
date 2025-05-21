@@ -9,6 +9,7 @@ class ValidationTest extends TestCase
     public function test_common_rules()
     {
         $rules = [
+            'phone' => ['phone'],
             'cpf' => ['cpf'],
             'cnpj' => ['cnpj'],
             'cnh' => ['cnh'],
@@ -76,6 +77,7 @@ class ValidationTest extends TestCase
         ];
 
         $data = [
+            'phone' => '+1 650 253 00 00',
             'cpf' => '22205417118',
             'cnpj' => '68518321000116',
             'cnh' => '02650306461',
@@ -189,6 +191,15 @@ class ValidationTest extends TestCase
             'age' => ['int', 'foobar:20'],
         ]);
 
+        $validation->validate();
+    }
+
+    public function test_rule_exception(): void
+    {
+        $this->expectException(\Respect\Validation\Exceptions\ComponentException::class);
+        $this->expectExceptionMessageMatches('*giggsey/libphonenumber-for-php*');
+
+        $validation = $this->validate(['phone' => 'f'], ['phone' => 'phone:BR']);
         $validation->validate();
     }
 }
