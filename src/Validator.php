@@ -3,6 +3,7 @@
 namespace Datalogix\Validation;
 
 use Illuminate\Validation\Validator as BaseValidator;
+use Respect\Validation\Exceptions\ComponentException;
 
 final class Validator extends BaseValidator
 {
@@ -13,6 +14,8 @@ final class Validator extends BaseValidator
             [$value, $args] = [$parameters[1], $parameters[2]];
 
             return RuleFactory::make($rule, $args)->validate($value);
+        } catch (ComponentException $e) {
+            throw $e;
         } catch (\Exception $e) {
             return parent::__call($method, $parameters);
         }
