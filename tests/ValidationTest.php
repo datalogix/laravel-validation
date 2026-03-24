@@ -3,6 +3,7 @@
 namespace Datalogix\Validation\Tests;
 
 use Illuminate\Support\MessageBag;
+use Respect\Validation\Exceptions\ComponentException;
 
 class ValidationTest extends TestCase
 {
@@ -196,7 +197,7 @@ class ValidationTest extends TestCase
 
     public function test_rule_exception(): void
     {
-        $this->expectException(\Respect\Validation\Exceptions\ComponentException::class);
+        $this->expectException(ComponentException::class);
         $this->expectExceptionMessageMatches('*giggsey/libphonenumber-for-php*');
 
         $validation = $this->validate(['phone' => 'f'], ['phone' => 'phone:BR']);

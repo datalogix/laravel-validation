@@ -4,6 +4,7 @@ namespace Datalogix\Validation\Tests;
 
 use Datalogix\Validation\ValidationServiceProvider;
 use GrahamCampbell\TestBench\AbstractPackageTestCase;
+use Illuminate\Validation\Validator;
 
 abstract class TestCase extends AbstractPackageTestCase
 {
@@ -18,7 +19,7 @@ abstract class TestCase extends AbstractPackageTestCase
     }
 
     /**
-     * @return \Illuminate\Validation\Validator
+     * @return Validator
      */
     protected function validate(array $data, array $rules, array $messages = [])
     {
