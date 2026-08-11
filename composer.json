@@ -19,11 +19,11 @@
     "require": {
         "php": "^8.2",
         "illuminate/support": "^11.0|^12.0|^13.0",
-        "respect/validation": "^2.4"
+        "respect/validation": "^2.5"
     },
     "require-dev": {
         "graham-campbell/testbench": "^6.3",
-        "laravel/pint": "^1.29",
+        "laravel/pint": "^1.30",
         "phpunit/phpunit": "^11.5"
     },
     "autoload": {
