@@ -45,4 +45,4 @@ jobs:
       - name: Coverage
         uses: codecov/codecov-action@v5
         env:
-            CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
