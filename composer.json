@@ -1,6 +1,6 @@
 {
     "name": "datalogix/laravel-validation",
-    "description": "Laravel Validation is a package the power of Respect Validation.",
+    "description": "Laravel Validation is a package that brings the power of Respect Validation.",
     "keywords": [
         "laravel",
         "validation",
@@ -18,13 +18,16 @@
     ],
     "require": {
         "php": "^8.2",
-        "illuminate/support": "^11.0|^12.0|^13.0",
+        "illuminate/support": "^12.0|^13.0",
         "respect/validation": "^2.5"
     },
     "require-dev": {
         "graham-campbell/testbench": "^6.3",
         "laravel/pint": "^1.30",
         "phpunit/phpunit": "^11.5"
+    },
+    "suggest": {
+        "giggsey/libphonenumber-for-php-lite": "Required to use the phone rule with a country code"
     },
     "autoload": {
         "psr-4": {

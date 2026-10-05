@@ -10,7 +10,6 @@
 /.gitattributes export-ignore
 /.github export-ignore
 /.gitignore export-ignore
-/.styleci.yml export-ignore
 /CHANGELOG.md export-ignore
 /README.md export-ignore
 /RELEASE.md export-ignore
