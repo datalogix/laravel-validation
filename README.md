@@ -162,7 +162,11 @@ You can also publish the package translations:
 php artisan vendor:publish --tag=laravel-validation-lang
 ```
 
-The placeholders `:value`, `:values`, `:min` and `:max` are replaced with the rule parameters.
+The placeholders are replaced with the rule parameters:
+
+- `:value` and `:min`: the first parameter
+- `:max`: the second parameter (or the first, when there is only one)
+- `:values`: all parameters, separated by commas
 
 ## For more validation rules
 
