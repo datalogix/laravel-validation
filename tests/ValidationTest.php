@@ -247,6 +247,18 @@ class ValidationTest extends TestCase
         $this->assertEquals('O campo cpf deve ser um CPF válido.', $validation->errors()->first('cpf'));
     }
 
+    public function test_translated_messages_with_parameters(): void
+    {
+        $validation = $this->validate(
+            ['number' => 10, 'word' => 'banana', 'code' => '1'],
+            ['number' => 'betweenExclusive:1,10', 'word' => 'containsCount:a,2', 'code' => 'hetu'],
+        );
+
+        $this->assertEquals('The number must be between 1 and 10 (exclusive).', $validation->errors()->first('number'));
+        $this->assertEquals('The word must contain a exactly 2 times.', $validation->errors()->first('word'));
+        $this->assertEquals('The code must be a valid Finnish personal identity code.', $validation->errors()->first('code'));
+    }
+
     public function test_application_messages_take_precedence(): void
     {
         $this->app['translator']->addLines(['validation.cpf' => 'App CPF message.'], 'en');
