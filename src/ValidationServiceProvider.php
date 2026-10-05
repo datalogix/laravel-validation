@@ -13,8 +13,18 @@ class ValidationServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        $this->app['validator']->resolver(static function ($translator, $data, $rules, $messages, $customAttributes) {
-            return new Validator($translator, $data, $rules, $messages, $customAttributes);
+        $this->loadTranslationsFrom(__DIR__.'/../lang', 'laravel-validation');
+
+        if ($this->app->runningInConsole()) {
+            $this->publishes([
+                __DIR__.'/../lang' => $this->app->langPath('vendor/laravel-validation'),
+            ], 'laravel-validation-lang');
+        }
+
+        $this->callAfterResolving('validator', static function ($factory) {
+            $factory->resolver(static fn ($translator, $data, $rules, $messages, $attributes) => new Validator(
+                $translator, $data, $rules, $messages, $attributes
+            ));
         });
     }
 }

@@ -2,6 +2,7 @@
 
 namespace Datalogix\Validation\Tests;
 
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\MessageBag;
 use Respect\Validation\Exceptions\ComponentException;
 
@@ -29,12 +30,11 @@ class ValidationTest extends TestCase
             'domain' => ['domain'],
             'directory' => ['directory'],
             'fileExists' => ['fileExists'],
-            'isFile' => ['file'],
             'endsWith' => ['endsWith:banana'],
             'equals' => ['equals:banana'],
             'even' => ['even'],
             'floatVal' => ['floatVal'],
-            'float' => ['floatVal'],
+            'float' => ['float'],
             'graph' => ['graph'],
             'instance' => ['instance:DateTime'],
             'int' => ['int'],
@@ -42,7 +42,7 @@ class ValidationTest extends TestCase
             'leapDate' => ['leapDate:Y-m-d'],
             'leapYear' => ['leapYear'],
             'arrayVal' => ['arrayVal'],
-            'Arr' => ['arrayVal'],
+            'Arr' => ['arr'],
             'lowercase' => ['lowercase'],
             'macAddress' => ['macAddress'],
             'multiple' => ['multiple:3'],
@@ -97,11 +97,11 @@ class ValidationTest extends TestCase
             'domain' => 'google.com.br',
             'directory' => __DIR__,
             'fileExists' => __FILE__,
-            'file' => __FILE__,
             'endsWith' => 'pera banana',
             'equals' => 'banana',
             'even' => 8,
             'floatVal' => 9.8,
+            'float' => 9.8,
             'graph' => 'LKM@#$%4;',
             'instance' => new \DateTime,
             'int' => 9,
@@ -109,6 +109,7 @@ class ValidationTest extends TestCase
             'leapDate' => '1988-02-29',
             'leapYear' => '1988',
             'arrayVal' => ['Brazil'],
+            'Arr' => ['Brazil'],
             'lowercase' => 'brazil',
             'macAddress' => '00:11:22:33:44:55',
             'multiple' => '9',
@@ -202,5 +203,107 @@ class ValidationTest extends TestCase
 
         $validation = $this->validate(['phone' => 'f'], ['phone' => 'phone:BR']);
         $validation->validate();
+    }
+
+    public function test_invalid_values_fail(): void
+    {
+        $validation = $this->validate([
+            'cpf' => '11111111111',
+            'cnpj' => '11111111111111',
+            'even' => 3,
+            'age' => '1950-01-01',
+        ], [
+            'cpf' => ['cpf'],
+            'cnpj' => ['cnpj'],
+            'even' => ['even'],
+            'age' => ['minAge:18', 'maxAge:60'],
+        ]);
+
+        $this->assertFalse($validation->passes());
+        $this->assertEqualsCanonicalizing(['cpf', 'cnpj', 'even', 'age'], $validation->errors()->keys());
+    }
+
+    public function test_extension_takes_precedence_over_respect_rule(): void
+    {
+        Validator::extend('cpf', fn () => false, 'Custom CPF message.');
+
+        $validation = $this->validate(['cpf' => '22205417118'], ['cpf' => 'cpf']);
+
+        $this->assertFalse($validation->passes());
+        $this->assertEquals('Custom CPF message.', $validation->errors()->first('cpf'));
+    }
+
+    public function test_translated_messages(): void
+    {
+        $validation = $this->validate(['cpf' => '1', 'age' => '1950-01-01'], ['cpf' => 'cpf', 'age' => 'maxAge:60']);
+
+        $this->assertEquals('The cpf must be a valid CPF.', $validation->errors()->first('cpf'));
+        $this->assertEquals('The age must have a maximum age of 60 years.', $validation->errors()->first('age'));
+
+        $this->app->setLocale('pt_BR');
+
+        $validation = $this->validate(['cpf' => '1'], ['cpf' => 'cpf']);
+
+        $this->assertEquals('O campo cpf deve ser um CPF válido.', $validation->errors()->first('cpf'));
+    }
+
+    public function test_application_messages_take_precedence(): void
+    {
+        $this->app['translator']->addLines(['validation.cpf' => 'App CPF message.'], 'en');
+
+        $validation = $this->validate(['cpf' => '1'], ['cpf' => 'cpf']);
+
+        $this->assertEquals('App CPF message.', $validation->errors()->first('cpf'));
+    }
+
+    public function test_max_placeholder(): void
+    {
+        $validation = $this->validate(
+            ['age' => '1950-01-01', 'name' => 'banana'],
+            ['age' => 'maxAge:60', 'name' => 'length:1,3'],
+            ['max_age' => ':max', 'length' => ':min-:max'],
+        );
+
+        $this->assertEquals('60', $validation->errors()->first('age'));
+        $this->assertEquals('1-3', $validation->errors()->first('name'));
+    }
+
+    public function test_rule_errors_are_not_hidden(): void
+    {
+        $this->expectException(\TypeError::class);
+
+        $this->validate(['number' => 9], ['number' => 'multiple:abc'])->passes();
+    }
+
+    public function test_boolean_parameters(): void
+    {
+        $this->assertFalse($this->validate(['domain' => 'example.notatld'], ['domain' => 'domain'])->passes());
+        $this->assertFalse($this->validate(['domain' => 'example.notatld'], ['domain' => 'domain:true'])->passes());
+        $this->assertTrue($this->validate(['domain' => 'example.notatld'], ['domain' => 'domain:false'])->passes());
+    }
+
+    public function test_implicit_rules(): void
+    {
+        $validation = $this->validate(['empty' => '', 'blank' => '   '], [
+            'empty' => 'notEmpty',
+            'blank' => 'notBlank',
+            'missing' => 'notOptional',
+        ]);
+
+        $this->assertFalse($validation->passes());
+        $this->assertEqualsCanonicalizing(['empty', 'blank', 'missing'], $validation->errors()->keys());
+    }
+
+    public function test_rules_requiring_objects_are_not_available(): void
+    {
+        $this->expectException(\BadMethodCallException::class);
+
+        $this->validate(['items' => [1, 2]], ['items' => 'each'])->passes();
+    }
+
+    public function test_related_rules_without_inner_rule(): void
+    {
+        $this->assertTrue($this->validate(['data' => ['name' => 'x']], ['data' => 'key:name'])->passes());
+        $this->assertFalse($this->validate(['data' => ['age' => 1]], ['data' => 'key:name'])->passes());
     }
 }
