@@ -22,9 +22,9 @@
         "respect/validation": "^2.5"
     },
     "require-dev": {
-        "graham-campbell/testbench": "^6.3",
         "laravel/pint": "^1.30",
-        "phpunit/phpunit": "^11.5"
+        "orchestra/testbench": "^10.0|^11.0",
+        "phpunit/phpunit": "^11.5|^12.0|^13.0"
     },
     "suggest": {
         "giggsey/libphonenumber-for-php-lite": "Required to use the phone rule with a country code"

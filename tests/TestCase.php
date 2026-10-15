@@ -3,19 +3,24 @@
 namespace Datalogix\Validation\Tests;
 
 use Datalogix\Validation\ValidationServiceProvider;
-use GrahamCampbell\TestBench\AbstractPackageTestCase;
+use Illuminate\Foundation\Application;
+use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Validator;
+use Orchestra\Testbench\TestCase as Orchestra;
 
-abstract class TestCase extends AbstractPackageTestCase
+abstract class TestCase extends Orchestra
 {
-    protected static $latestResponse;
-
     /**
-     * Get the service provider class.
+     * Get package providers.
+     *
+     * @param  Application  $app
+     * @return array<int, class-string<ServiceProvider>>
      */
-    protected static function getServiceProviderClass(): string
+    protected function getPackageProviders($app)
     {
-        return ValidationServiceProvider::class;
+        return [
+            ValidationServiceProvider::class,
+        ];
     }
 
     /**
