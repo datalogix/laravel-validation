@@ -11,6 +11,7 @@
 /.github export-ignore
 /.gitignore export-ignore
 /CHANGELOG.md export-ignore
+/CLAUDE.md export-ignore
 /README.md export-ignore
 /RELEASE.md export-ignore
 /UPGRADE.md export-ignore
