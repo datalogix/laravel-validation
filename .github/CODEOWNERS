@@ -1,0 +1,2 @@
+# Changes to the workflows need their approval, so a pull request cannot lower its own checks (datalogix/workflows)
+/.github/ @ricardogobbosouza

@@ -12,7 +12,7 @@ composer lint                              # check style (Pint --test) and stati
 composer format                            # format with Laravel Pint
 ```
 
-Tests are Pest on `orchestra/testbench`: `tests/Pest.php` binds `tests/TestCase.php`, which registers `ValidationServiceProvider` and provides a `validate($data, $rules, $messages)` helper. Static analysis is Larastan at level 5 (`phpstan.neon`, `src` only). CI runs the shared workflow `datalogix/workflows/.github/workflows/laravel-tests.yml@v1` with `vendor/bin/pest`. Supported: PHP ^8.2, Laravel 12 and 13, respect/validation ^2.5.
+Tests are Pest on `orchestra/testbench`: `tests/Pest.php` binds `tests/TestCase.php`, which registers `ValidationServiceProvider` and provides a `validate($data, $rules, $messages)` helper. Static analysis is Larastan at level 5 (`phpstan.neon`, `src` only). CI is `.github/workflows/datalogix.yml`, which calls `datalogix/workflows/.github/workflows/package.yml@v2` (runs `composer test`, Pint and PHPStan); changes under `.github/` need CODEOWNERS approval. Supported: PHP ^8.2, Laravel 12 and 13, respect/validation ^2.5.
 
 ## Architecture
 
@@ -30,3 +30,4 @@ The package exposes every [Respect Validation](https://respect-validation.readth
 - `length` with a single bound uses `length_min` (`length:10`) or `length_max` (`length:,5`), and exclusive bounds (`length:10,20,false`) add the `_exclusive` suffix (`length_exclusive`, `length_min_exclusive`, `length_max_exclusive`), chosen in `Validator::lengthMessage()`, unless the application replaced the `length` message. The application's `validation.length_*` line wins over the package one.
 - `base64` is a Laravel built-in since Laravel 13, so its package message only applies on Laravel 12; the `int` and `bool` keys are kept only for backward compatibility.
 - Respect-specific placeholders, replaced in `Validator::makeReplacements()`: `:value`/`:min` = first parameter, `:max` = second parameter (or the first when there is only one), `:values` = all parameters joined by `, `.
+- Issues and pull requests: English
