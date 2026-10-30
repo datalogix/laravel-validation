@@ -5,13 +5,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ```bash
-composer test                                   # run the PHPUnit suite (prints coverage, writes clover.xml)
-vendor/bin/phpunit --no-coverage                # faster run without coverage
-vendor/bin/phpunit --filter test_implicit_rules # run a single test
-composer lint                                   # format with Laravel Pint
+composer test                              # run the Pest suite (prints coverage, writes clover.xml)
+vendor/bin/pest --no-coverage              # faster run without coverage
+vendor/bin/pest --filter "implicit rules"  # run a single test
+composer lint                              # check style (Pint --test) and static analysis (Larastan)
+composer format                            # format with Laravel Pint
 ```
 
-Tests use `orchestra/testbench`; `tests/TestCase.php` registers `ValidationServiceProvider` and provides a `validate($data, $rules, $messages)` helper. CI runs the shared workflow `datalogix/workflows/.github/workflows/laravel-tests.yml@v1`. Supported: PHP ^8.2, Laravel 12 and 13.
+Tests are Pest on `orchestra/testbench`: `tests/Pest.php` binds `tests/TestCase.php`, which registers `ValidationServiceProvider` and provides a `validate($data, $rules, $messages)` helper. Static analysis is Larastan at level 5 (`phpstan.neon`, `src` only). CI runs the shared workflow `datalogix/workflows/.github/workflows/laravel-tests.yml@v1` with `vendor/bin/pest`. Supported: PHP ^8.2, Laravel 12 and 13, respect/validation ^2.5.
 
 ## Architecture
 
@@ -19,10 +20,13 @@ The package exposes every [Respect Validation](https://respect-validation.readth
 
 - **`ValidationServiceProvider`** loads translations (namespace `laravel-validation`, publish tag `laravel-validation-lang`) and replaces the validator factory's resolver so every validator is a `Datalogix\Validation\Validator`. Only one resolver can exist, so another package calling `Validator::resolver()` conflicts with this one.
 - **`Validator`** (extends Laravel's validator) intercepts `__call('validateXxx', ...)`. If the rule is not a Laravel built-in and not registered through `Validator::extend()`, it is resolved through `RuleFactory` and run with Respect's `validate()`. Laravel built-ins and extensions always take precedence over Respect rules with the same name; `isRespectRule()` encodes this check and is reused for messages and placeholders. `NotBlank`, `NotEmpty` and `NotOptional` are added to `implicitRules` so they run on empty values.
-- **`RuleFactory`** maps a rule name to `Respect\Validation\Rules\{Name}`. It applies `$alias` (e.g. `Int` → `IntVal`, `MinimumAge` → `MinAge`), excludes `Abstract*` classes and rules whose constructors require objects (e.g. other rules), which cannot be expressed as string parameters. It also casts `"true"`/`"false"` strings to booleans for `bool` constructor parameters. Results and reflection data are memoized in static arrays.
+- **`RuleFactory`** maps a rule name to `Respect\Validation\Rules\{Name}`, applying `$alias` (e.g. `MinimumAge` → `MinAge`, `FileExists` → `Exists`; `Int`/`Bool` are only reachable through `RuleFactory::make()` because Laravel normalizes `int`/`bool` to `Integer`/`Boolean`). It excludes non-instantiable classes and rules whose constructors require objects (e.g. `each`, `not`), which cannot be expressed as string parameters. String parameters are cast to the constructor types: `""`/`"null"` → `null` for nullable parameters, `"true"`/`"false"` → bool (anything else throws `InvalidArgumentException`), and for an `array` parameter the remaining parameters become the array (`containsAny:a,b`), so later parameters such as `containsAny`'s `$identical` cannot be set. Results and reflection data are memoized in static arrays.
 
 ## Error messages
 
-- Messages live in `lang/en/validation.php` and `lang/pt_BR/validation.php`, keyed by the snake_case rule name. When adding a message, add it to both locales.
-- The application's `validation.{rule}` message wins; the package message is used only when Laravel would otherwise return the raw key.
+- Messages live in `lang/en/validation.php` and `lang/pt_BR/validation.php`, keyed by the snake_case rule name. When adding a message, add it to both locales; tests check that both locales have the same keys and placeholders and that every available rule has a message.
+- English messages follow Laravel's "The :attribute field must ..." style.
+- The application's `validation.{rule}` message wins; the package message is used when Laravel would return the raw key, or, for rules in `Validator::FRAMEWORK_KEY_RULES` (`uploaded`), Laravel's own default line.
+- `length` with a single bound uses `length_min` (`length:10`) or `length_max` (`length:,5`), chosen in `Validator::lengthMessage()`, unless the application replaced the `length` message.
+- `base64` is a Laravel built-in since Laravel 13, so its package message only applies on Laravel 12; the `int` and `bool` keys are kept only for backward compatibility.
 - Respect-specific placeholders, replaced in `Validator::makeReplacements()`: `:value`/`:min` = first parameter, `:max` = second parameter (or the first when there is only one), `:values` = all parameters joined by `, `.

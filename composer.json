@@ -30,7 +30,7 @@
     },
     "suggest": {
         "ext-bcmath": "Required to use the iban rule",
-        "ext-fileinfo": "Required to use the image and mimetype rules",
+        "ext-fileinfo": "Required to use the mimetype rule",
         "giggsey/libphonenumber-for-php-lite": "Required to use the phone rule with a country code"
     },
     "autoload": {
