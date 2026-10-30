@@ -48,7 +48,7 @@ $request->validate([
 
 - Use the Respect rule name in camelCase: `cpf`, `videoUrl:youtube`, `minAge:18`.
 - Parameters are passed to the rule constructor, in order:
-  - `true`/`false` for boolean parameters (`domain:false`); any other value throws an `InvalidArgumentException`.
+  - `true`/`false` for boolean parameters (`domain:false`); any other value (`1`, `off`, `TRUE`, ...) throws an `InvalidArgumentException`.
   - an empty value or `null` skips a nullable parameter (`length:,5`).
   - for an array parameter, the remaining parameters become the array (`containsAny:foo,bar`, `subset:a,b`).
 - Rules that require other rules or objects (`each`, `not`, `allOf`, `key` with an inner rule, ...) are not available as string rules.
@@ -82,7 +82,7 @@ The placeholders are replaced with the rule parameters:
 - `:max`: the second parameter (or the first, when there is only one)
 - `:values`: all parameters, separated by commas
 
-`length` with a single bound uses the `length_min` (`length:10`) or `length_max` (`length:,5`) message, unless you replace the `length` message. The `uploaded` rule uses the package message instead of Laravel's "failed to upload" line, unless you pass a custom message for it.
+`length` with a single bound uses the `length_min` (`length:10`) or `length_max` (`length:,5`) message, and exclusive bounds use `length_exclusive`, `length_min_exclusive` or `length_max_exclusive` (`length:10,20,false`), unless you replace the `length` message. You can override these messages with the same keys in your `lang/{locale}/validation.php`. The `uploaded` rule uses the package message instead of Laravel's "failed to upload" line, unless you pass a custom message for it.
 
 ## Available rules
 

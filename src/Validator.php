@@ -104,19 +104,25 @@ final class Validator extends BaseValidator
 
     /**
      * Use the "at least" or "at most" message when the length rule has only one bound,
+     * and the "greater than" or "less than" message when the bounds are exclusive,
      * unless the application replaced the package message.
      */
     private function lengthMessage(string $message, array $parameters): string
     {
-        $key = 'laravel-validation::validation.length';
-        $hasMin = ! \in_array($parameters[0] ?? null, [null, '', 'null'], true);
-        $hasMax = ! \in_array($parameters[1] ?? null, [null, '', 'null'], true);
+        $hasMin = ! RuleFactory::isNullParameter($parameters[0] ?? null);
+        $hasMax = ! RuleFactory::isNullParameter($parameters[1] ?? null);
 
-        if ($message !== $this->translator->get($key) || $hasMin === $hasMax) {
+        if ($message !== $this->translator->get('laravel-validation::validation.length') || (! $hasMin && ! $hasMax)) {
             return $message;
         }
 
-        return $this->translator->get($key.($hasMin ? '_min' : '_max'));
+        $key = 'validation.length'
+            .($hasMin === $hasMax ? '' : ($hasMin ? '_min' : '_max'))
+            .(($parameters[2] ?? 'true') === 'false' ? '_exclusive' : '');
+
+        $translated = $this->translator->get($key);
+
+        return $translated !== $key ? $translated : $this->translator->get('laravel-validation::'.$key);
     }
 
     /**

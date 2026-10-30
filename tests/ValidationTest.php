@@ -280,9 +280,9 @@ test('boolean parameters', function () {
     expect($this->validate(['domain' => 'example.notatld'], ['domain' => 'domain:false'])->passes())->toBeTrue();
 });
 
-test('invalid boolean parameters', function () {
-    $this->validate(['domain' => 'example.notatld'], ['domain' => 'domain:abc'])->passes();
-})->throws(InvalidArgumentException::class);
+test('invalid boolean parameters', function (string $rule) {
+    $this->validate(['domain' => 'example.notatld'], ['domain' => $rule])->passes();
+})->throws(InvalidArgumentException::class)->with(['domain:abc', 'domain:1', 'domain:0', 'domain:off', 'domain:TRUE']);
 
 test('null parameters', function (string $rule) {
     expect($this->validate(['name' => 'abcde'], ['name' => $rule])->passes())->toBeTrue();
@@ -384,6 +384,9 @@ test('length messages', function (string $rule, string $message) {
     ['length:30,', 'The name field must have a length of at least 30.'],
     ['length:,5', 'The name field must have a length of at most 5.'],
     ['length:null,5', 'The name field must have a length of at most 5.'],
+    ['length:30,40,false', 'The name field must have a length greater than 30 and less than 40.'],
+    ['length:30,,false', 'The name field must have a length greater than 30.'],
+    ['length:,5,false', 'The name field must have a length less than 5.'],
 ]);
 
 test('length message replaced by the application', function () {
@@ -391,3 +394,15 @@ test('length message replaced by the application', function () {
 
     expect($validation->errors()->first('name'))->toEqual('-5');
 });
+
+test('length messages from the application lines', function (string $rule, string $key) {
+    $this->app['translator']->addLines(["validation.{$key}" => "App {$key}"], 'en');
+
+    $validation = $this->validate(['name' => 'abcdefghijklmnopqrstuvwxyz'], ['name' => $rule]);
+
+    expect($validation->errors()->first('name'))->toEqual("App {$key}");
+})->with([
+    ['length:30', 'length_min'],
+    ['length:,5', 'length_max'],
+    ['length:30,,false', 'length_min_exclusive'],
+]);
