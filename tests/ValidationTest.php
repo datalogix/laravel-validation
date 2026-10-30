@@ -280,9 +280,22 @@ test('boolean parameters', function () {
     expect($this->validate(['domain' => 'example.notatld'], ['domain' => 'domain:false'])->passes())->toBeTrue();
 });
 
+test('boolean parameters accepted by filter_var', function (string $rule, bool $passes) {
+    expect($this->validate(['domain' => 'example.notatld'], ['domain' => $rule])->passes())->toBe($passes);
+})->with([
+    ['domain:1', false],
+    ['domain:on', false],
+    ['domain:YES', false],
+    ['domain:TRUE', false],
+    ['domain:0', true],
+    ['domain:off', true],
+    ['domain:no', true],
+    ['domain:FALSE', true],
+]);
+
 test('invalid boolean parameters', function (string $rule) {
     $this->validate(['domain' => 'example.notatld'], ['domain' => $rule])->passes();
-})->throws(InvalidArgumentException::class)->with(['domain:abc', 'domain:1', 'domain:0', 'domain:off', 'domain:TRUE']);
+})->throws(InvalidArgumentException::class)->with(['domain:abc', 'domain:2', 'domain:maybe']);
 
 test('null parameters', function (string $rule) {
     expect($this->validate(['name' => 'abcde'], ['name' => $rule])->passes())->toBeTrue();
@@ -387,6 +400,7 @@ test('length messages', function (string $rule, string $message) {
     ['length:30,40,false', 'The name field must have a length greater than 30 and less than 40.'],
     ['length:30,,false', 'The name field must have a length greater than 30.'],
     ['length:,5,false', 'The name field must have a length less than 5.'],
+    ['length:30,40,0', 'The name field must have a length greater than 30 and less than 40.'],
 ]);
 
 test('length message replaced by the application', function () {

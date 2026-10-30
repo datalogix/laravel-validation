@@ -18,7 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - English messages follow Laravel's "The :attribute field must ..." style, and several messages were reworded in `en` and `pt_BR` (`charset`, `key`, `key_nested`, `length`, `subset`, `subdivision_code`, `type` and others). Applications that compare message texts in their tests may need to update them.
 - The `uploaded` rule shows the package message instead of Laravel's "The :attribute failed to upload." line, unless a custom message is given.
-- A boolean rule parameter must be exactly `true` or `false`; any other value (e.g. `domain:abc`, `domain:1`, `domain:off`, `domain:TRUE`) throws an `InvalidArgumentException` instead of being treated as `false` or `true`.
+- An invalid boolean rule parameter (e.g. `domain:abc`) throws an `InvalidArgumentException` instead of being treated as `false`. `true`/`false`, `1`/`0`, `on`/`off` and `yes`/`no` (any case) keep working.
 - `illuminate/validation` is now an explicit dependency.
 
 ### Fixed

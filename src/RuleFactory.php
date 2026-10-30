@@ -100,11 +100,13 @@ final class RuleFactory
             if ($type instanceof ReflectionNamedType
                 && $type->getName() === 'bool'
                 && \is_string($parameters[$index])) {
-                $parameters[$index] = match ($parameters[$index]) {
-                    'true' => true,
-                    'false' => false,
-                    default => throw new InvalidArgumentException("Invalid boolean parameter [{$parameters[$index]}] for rule [{$class}]."),
-                };
+                $value = \filter_var($parameters[$index], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+
+                if ($value === null) {
+                    throw new InvalidArgumentException("Invalid boolean parameter [{$parameters[$index]}] for rule [{$class}].");
+                }
+
+                $parameters[$index] = $value;
             }
         }
 
@@ -113,6 +115,8 @@ final class RuleFactory
 
     /**
      * Determine if the string parameter means "no value" for a nullable parameter.
+     *
+     * @internal
      */
     public static function isNullParameter(mixed $value): bool
     {

@@ -48,7 +48,7 @@ $request->validate([
 
 - Use the Respect rule name in camelCase: `cpf`, `videoUrl:youtube`, `minAge:18`.
 - Parameters are passed to the rule constructor, in order:
-  - `true`/`false` for boolean parameters (`domain:false`); any other value (`1`, `off`, `TRUE`, ...) throws an `InvalidArgumentException`.
+  - `true`/`false` (also `1`/`0`, `on`/`off`, `yes`/`no`) for boolean parameters (`domain:false`); any other value throws an `InvalidArgumentException`.
   - an empty value or `null` skips a nullable parameter (`length:,5`).
   - for an array parameter, the remaining parameters become the array (`containsAny:foo,bar`, `subset:a,b`).
 - Rules that require other rules or objects (`each`, `not`, `allOf`, `key` with an inner rule, ...) are not available as string rules.

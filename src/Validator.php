@@ -118,7 +118,7 @@ final class Validator extends BaseValidator
 
         $key = 'validation.length'
             .($hasMin === $hasMax ? '' : ($hasMin ? '_min' : '_max'))
-            .(($parameters[2] ?? 'true') === 'false' ? '_exclusive' : '');
+            .(\filter_var($parameters[2] ?? true, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) === false ? '_exclusive' : '');
 
         $translated = $this->translator->get($key);
 
