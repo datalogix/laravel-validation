@@ -85,17 +85,38 @@ final class Validator extends BaseValidator
      */
     public function makeReplacements($message, $attribute, $rule, $parameters)
     {
-        $message = parent::makeReplacements($message, $attribute, $rule, $parameters);
-
         if (! $this->isRespectRule($rule)) {
-            return $message;
+            return parent::makeReplacements($message, $attribute, $rule, $parameters);
         }
+
+        if ($rule === 'Length') {
+            $message = $this->lengthMessage($message, $parameters);
+        }
+
+        $message = parent::makeReplacements($message, $attribute, $rule, $parameters);
 
         return \str_replace(
             [':values', ':value', ':min', ':max'],
             [\implode(', ', $parameters), $parameters[0] ?? '', $parameters[0] ?? '', $parameters[1] ?? $parameters[0] ?? ''],
             $message
         );
+    }
+
+    /**
+     * Use the "at least" or "at most" message when the length rule has only one bound,
+     * unless the application replaced the package message.
+     */
+    private function lengthMessage(string $message, array $parameters): string
+    {
+        $key = 'laravel-validation::validation.length';
+        $hasMin = ! \in_array($parameters[0] ?? null, [null, '', 'null'], true);
+        $hasMax = ! \in_array($parameters[1] ?? null, [null, '', 'null'], true);
+
+        if ($message !== $this->translator->get($key) || $hasMin === $hasMax) {
+            return $message;
+        }
+
+        return $this->translator->get($key.($hasMin ? '_min' : '_max'));
     }
 
     /**

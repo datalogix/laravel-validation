@@ -373,3 +373,21 @@ test('every available respect rule has a message', function () {
         }
     }
 });
+
+test('length messages', function (string $rule, string $message) {
+    $validation = $this->validate(['name' => 'abcdefghijklmnopqrstuvwxyz'], ['name' => $rule]);
+
+    expect($validation->errors()->first('name'))->toEqual($message);
+})->with([
+    ['length:30,40', 'The name field must have a length between 30 and 40.'],
+    ['length:30', 'The name field must have a length of at least 30.'],
+    ['length:30,', 'The name field must have a length of at least 30.'],
+    ['length:,5', 'The name field must have a length of at most 5.'],
+    ['length:null,5', 'The name field must have a length of at most 5.'],
+]);
+
+test('length message replaced by the application', function () {
+    $validation = $this->validate(['name' => 'abcdef'], ['name' => 'length:,5'], ['length' => ':min-:max']);
+
+    expect($validation->errors()->first('name'))->toEqual('-5');
+});

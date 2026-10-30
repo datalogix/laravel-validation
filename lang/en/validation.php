@@ -72,6 +72,8 @@ return [
     'leap_date' => 'The :attribute field must be a leap date.',
     'leap_year' => 'The :attribute field must be a leap year.',
     'length' => 'The :attribute field must have a length between :min and :max.',
+    'length_max' => 'The :attribute field must have a length of at most :max.',
+    'length_min' => 'The :attribute field must have a length of at least :min.',
     'less_than' => 'The :attribute field must be less than :value.',
     'luhn' => 'The :attribute field must be a valid Luhn number.',
     'max_age' => 'The :attribute field must have a maximum age of :value years.',

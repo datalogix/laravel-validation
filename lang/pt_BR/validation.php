@@ -72,6 +72,8 @@ return [
     'leap_date' => 'O campo :attribute deve ser uma data bissexta.',
     'leap_year' => 'O campo :attribute deve ser um ano bissexto.',
     'length' => 'O campo :attribute deve ter comprimento entre :min e :max.',
+    'length_max' => 'O campo :attribute deve ter comprimento de no máximo :max.',
+    'length_min' => 'O campo :attribute deve ter comprimento de no mínimo :min.',
     'less_than' => 'O campo :attribute deve ser menor que :value.',
     'luhn' => 'O campo :attribute deve ser um número válido pelo algoritmo de Luhn.',
     'max_age' => 'O campo :attribute deve ter uma idade máxima de :value anos.',
