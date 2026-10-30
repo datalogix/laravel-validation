@@ -277,6 +277,42 @@ test('boolean parameters', function () {
     expect($this->validate(['domain' => 'example.notatld'], ['domain' => 'domain:false'])->passes())->toBeTrue();
 });
 
+test('invalid boolean parameters', function () {
+    $this->validate(['domain' => 'example.notatld'], ['domain' => 'domain:abc'])->passes();
+})->throws(InvalidArgumentException::class);
+
+test('null parameters', function (string $rule) {
+    expect($this->validate(['name' => 'abcde'], ['name' => $rule])->passes())->toBeTrue();
+    expect($this->validate(['name' => 'abcdef'], ['name' => $rule])->passes())->toBeFalse();
+})->with(['length:,5', 'length:null,5']);
+
+test('array parameters', function () {
+    expect($this->validate(['word' => 'banana'], ['word' => 'containsAny:nan,xyz'])->passes())->toBeTrue();
+    expect($this->validate(['word' => 'banana'], ['word' => 'containsAny:xyz,abc'])->passes())->toBeFalse();
+    expect($this->validate(['items' => ['a']], ['items' => 'subset:a,b'])->passes())->toBeTrue();
+    expect($this->validate(['items' => ['c']], ['items' => 'subset:a,b'])->passes())->toBeFalse();
+
+    $validation = $this->validate(['word' => 'x'], ['word' => 'containsAny:a,b']);
+
+    expect($validation->errors()->first('word'))->toEqual('The word must contain at least one of the following: a, b.');
+});
+
+test('values placeholder', function () {
+    $validation = $this->validate(['word' => 'x'], ['word' => 'length:2,3'], ['length' => ':values']);
+
+    expect($validation->errors()->first('word'))->toEqual('2, 3');
+});
+
+test('laravel rules keep their own placeholders', function () {
+    $validation = $this->validate(['name' => 'a'], ['name' => 'min:3'], ['min' => ':min|:max']);
+
+    expect($validation->errors()->first('name'))->toEqual('3|:max');
+});
+
+test('abstract rules are not available', function () {
+    $this->validate(['age' => '2000-01-01'], ['age' => 'abstractAge:18'])->passes();
+})->throws(BadMethodCallException::class);
+
 test('implicit rules', function () {
     $validation = $this->validate(['empty' => '', 'blank' => '   '], [
         'empty' => 'notEmpty',

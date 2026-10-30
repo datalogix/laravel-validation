@@ -2,13 +2,16 @@
 
 namespace Datalogix\Validation;
 
+use InvalidArgumentException;
 use ReflectionClass;
 use ReflectionNamedType;
 use Respect\Validation\Validatable;
 
 final class RuleFactory
 {
-    private static $alias = [
+    // Laravel normalizes the "int" and "bool" string rules to Integer and Boolean,
+    // so the Int and Bool aliases are only reachable through RuleFactory::make().
+    private static array $alias = [
         'Arr' => 'ArrayVal',
         'Bool' => 'BoolType',
         'Cntrl' => 'Control',
@@ -29,18 +32,18 @@ final class RuleFactory
     /**
      * @var array<string, bool>
      */
-    private static $exists = [];
+    private static array $available = [];
 
     /**
      * @var array<string, \ReflectionParameter[]>
      */
-    private static $parameters = [];
+    private static array $constructorParameters = [];
 
     public static function exists(string $rule): bool
     {
-        return self::$exists[$rule] ??= $rule !== ''
-            && ! \str_starts_with($rule, 'Abstract')
+        return self::$available[$rule] ??= $rule !== ''
             && \is_subclass_of($class = self::className($rule), Validatable::class)
+            && (new ReflectionClass($class))->isInstantiable()
             && ! self::requiresObjects($class);
     }
 
@@ -71,7 +74,9 @@ final class RuleFactory
     }
 
     /**
-     * Convert "true" and "false" strings for constructor parameters typed as bool.
+     * Convert the string parameters to the constructor types: "" and "null" to null
+     * for nullable parameters, "true" and "false" to bool, and the remaining
+     * parameters to a single array for an array parameter.
      */
     private static function castParameters(string $class, array $parameters): array
     {
@@ -82,10 +87,26 @@ final class RuleFactory
                 break;
             }
 
+            if ($type instanceof ReflectionNamedType && $type->getName() === 'array') {
+                return [...\array_slice($parameters, 0, $index), \array_slice($parameters, $index)];
+            }
+
+            if ($type?->allowsNull() && \in_array($parameters[$index], ['', 'null'], true)) {
+                $parameters[$index] = null;
+
+                continue;
+            }
+
             if ($type instanceof ReflectionNamedType
                 && $type->getName() === 'bool'
                 && \is_string($parameters[$index])) {
-                $parameters[$index] = \filter_var($parameters[$index], FILTER_VALIDATE_BOOLEAN);
+                $value = \filter_var($parameters[$index], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+
+                if ($value === null) {
+                    throw new InvalidArgumentException("Invalid boolean parameter [{$parameters[$index]}] for rule [{$class}].");
+                }
+
+                $parameters[$index] = $value;
             }
         }
 
@@ -97,7 +118,7 @@ final class RuleFactory
      */
     private static function constructorParameters(string $class): array
     {
-        return self::$parameters[$class] ??= (new ReflectionClass($class))->getConstructor()?->getParameters() ?? [];
+        return self::$constructorParameters[$class] ??= (new ReflectionClass($class))->getConstructor()?->getParameters() ?? [];
     }
 
     private static function className(string $rule): string
