@@ -1,7 +1,10 @@
 <?php
 
+use Datalogix\Validation\RuleFactory;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\MessageBag;
+use Illuminate\Support\Str;
+use Illuminate\Validation\Validator as BaseValidator;
 use Respect\Validation\Exceptions\ComponentException;
 
 test('common rules', function () {
@@ -225,8 +228,8 @@ test('extension takes precedence over respect rule', function () {
 test('translated messages', function () {
     $validation = $this->validate(['cpf' => '1', 'age' => '1950-01-01'], ['cpf' => 'cpf', 'age' => 'maxAge:60']);
 
-    expect($validation->errors()->first('cpf'))->toEqual('The cpf must be a valid CPF.');
-    expect($validation->errors()->first('age'))->toEqual('The age must have a maximum age of 60 years.');
+    expect($validation->errors()->first('cpf'))->toEqual('The cpf field must be a valid CPF.');
+    expect($validation->errors()->first('age'))->toEqual('The age field must have a maximum age of 60 years.');
 
     $this->app->setLocale('pt_BR');
 
@@ -241,9 +244,9 @@ test('translated messages with parameters', function () {
         ['number' => 'betweenExclusive:1,10', 'word' => 'containsCount:a,2', 'code' => 'hetu'],
     );
 
-    expect($validation->errors()->first('number'))->toEqual('The number must be between 1 and 10 (exclusive).');
-    expect($validation->errors()->first('word'))->toEqual('The word must contain a exactly 2 times.');
-    expect($validation->errors()->first('code'))->toEqual('The code must be a valid Finnish personal identity code.');
+    expect($validation->errors()->first('number'))->toEqual('The number field must be between 1 and 10 (exclusive).');
+    expect($validation->errors()->first('word'))->toEqual('The word field must contain a exactly 2 times.');
+    expect($validation->errors()->first('code'))->toEqual('The code field must be a valid Finnish personal identity code.');
 });
 
 test('application messages take precedence', function () {
@@ -294,7 +297,7 @@ test('array parameters', function () {
 
     $validation = $this->validate(['word' => 'x'], ['word' => 'containsAny:a,b']);
 
-    expect($validation->errors()->first('word'))->toEqual('The word must contain at least one of the following: a, b.');
+    expect($validation->errors()->first('word'))->toEqual('The word field must contain at least one of the following: a, b.');
 });
 
 test('values placeholder', function () {
@@ -333,4 +336,40 @@ test('rules requiring objects are not available', function () {
 test('related rules without inner rule', function () {
     expect($this->validate(['data' => ['name' => 'x']], ['data' => 'key:name'])->passes())->toBeTrue();
     expect($this->validate(['data' => ['age' => 1]], ['data' => 'key:name'])->passes())->toBeFalse();
+});
+
+test('package message for rules with a framework key', function () {
+    $validation = $this->validate(['file' => 'abc'], ['file' => 'uploaded']);
+
+    expect($validation->errors()->first('file'))->toEqual('The file field must be an uploaded file.');
+
+    $validation = $this->validate(['file' => 'abc'], ['file' => 'uploaded'], ['file.uploaded' => 'Custom upload message.']);
+
+    expect($validation->errors()->first('file'))->toEqual('Custom upload message.');
+});
+
+test('locales have the same keys and placeholders', function () {
+    $en = require __DIR__.'/../lang/en/validation.php';
+    $ptBr = require __DIR__.'/../lang/pt_BR/validation.php';
+
+    expect(array_keys($ptBr))->toEqualCanonicalizing(array_keys($en));
+
+    foreach ($en as $key => $message) {
+        preg_match_all('/:\w+/', $message, $enPlaceholders);
+        preg_match_all('/:\w+/', $ptBr[$key], $ptBrPlaceholders);
+
+        expect($ptBrPlaceholders[0])->toEqualCanonicalizing($enPlaceholders[0], "Placeholders differ for [{$key}].");
+    }
+});
+
+test('every available respect rule has a message', function () {
+    $en = require __DIR__.'/../lang/en/validation.php';
+
+    foreach (glob(__DIR__.'/../vendor/respect/validation/library/Rules/*.php') as $file) {
+        $rule = basename($file, '.php');
+
+        if (RuleFactory::exists($rule) && ! method_exists(BaseValidator::class, 'validate'.$rule)) {
+            expect($en)->toHaveKey(Str::snake($rule));
+        }
+    }
 });
