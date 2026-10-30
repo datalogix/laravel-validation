@@ -8,4 +8,6 @@ on:
 jobs:
   tests:
     uses: datalogix/workflows/.github/workflows/laravel-tests.yml@v1
+    with:
+      test-command: vendor/bin/pest
     secrets: inherit

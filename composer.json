@@ -19,14 +19,18 @@
     "require": {
         "php": "^8.2",
         "illuminate/support": "^12.0|^13.0",
+        "illuminate/validation": "^12.0|^13.0",
         "respect/validation": "^2.5"
     },
     "require-dev": {
+        "larastan/larastan": "^3.13",
         "laravel/pint": "^1.30",
         "orchestra/testbench": "^10.0|^11.0",
-        "phpunit/phpunit": "^11.5|^12.0|^13.0"
+        "pestphp/pest": "^3.0|^4.0"
     },
     "suggest": {
+        "ext-bcmath": "Required to use the iban rule",
+        "ext-fileinfo": "Required to use the image and mimetype rules",
         "giggsey/libphonenumber-for-php-lite": "Required to use the phone rule with a country code"
     },
     "autoload": {
@@ -40,8 +44,12 @@
         }
     },
     "scripts": {
-        "lint": "vendor/bin/pint",
-        "test": "vendor/bin/phpunit"
+        "format": "@php vendor/bin/pint",
+        "lint": [
+            "@php vendor/bin/pint --test",
+            "@php vendor/bin/phpstan analyse"
+        ],
+        "test": "@php vendor/bin/pest"
     },
     "extra": {
         "laravel": {
@@ -51,7 +59,10 @@
         }
     },
     "config": {
-        "sort-packages": true
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
     },
     "minimum-stability": "dev",
     "prefer-stable": true
