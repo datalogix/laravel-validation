@@ -12,7 +12,7 @@ composer lint                              # check style (Pint --test) and stati
 composer format                            # format with Laravel Pint
 ```
 
-Tests are Pest on `orchestra/testbench`: `tests/Pest.php` binds `tests/TestCase.php`, which registers `ValidationServiceProvider` and provides a `validate($data, $rules, $messages)` helper. Static analysis is Larastan at level 5 (`phpstan.neon`, `src` only). CI is `.github/workflows/datalogix.yml`, which calls `datalogix/workflows/.github/workflows/package.yml@v2` (runs `composer test`, Pint and PHPStan); changes under `.github/` need CODEOWNERS approval. Supported: PHP ^8.2, Laravel 12 and 13, respect/validation ^2.5.
+Tests are Pest on `orchestra/testbench`: `tests/Pest.php` binds `tests/TestCase.php`, which registers `ValidationServiceProvider` and provides a `validate($data, $rules, $messages)` helper. Static analysis is Larastan at level 5 (`phpstan.neon`, `src` only). CI is `.github/workflows/datalogix.yml`, which calls `datalogix/workflows/.github/workflows/package.yml@v2` (runs `composer test`, Pint and PHPStan). Supported: PHP ^8.2, Laravel 12 and 13, respect/validation ^2.5.
 
 ## Architecture
 
