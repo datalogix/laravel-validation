@@ -8,6 +8,7 @@ use ReflectionClass;
 use ReflectionNamedType;
 use Respect\Validation\Rules\Length;
 use Respect\Validation\Validatable;
+use Stringable;
 
 final class RuleFactory
 {
@@ -73,21 +74,30 @@ final class RuleFactory
     }
 
     /**
-     * Get the parameters to show in a message: flat, and with null for skipped nullable parameters.
+     * Get the converted parameters as they appear in a message: the values of an array
+     * parameter instead of the array and what follows it, and null for what cannot be shown.
      *
      * @internal
      */
     public static function messageParameters(string $rule, array $parameters): array
     {
-        $constructorParameters = self::constructorParameters(self::className($rule));
+        $values = [];
 
-        foreach ($parameters as $index => $value) {
-            if (($constructorParameters[$index] ?? null)?->getType()?->allowsNull() && self::isNullParameter($value)) {
-                $parameters[$index] = null;
+        foreach (self::cast($rule, $parameters) as $value) {
+            if (\is_array($value)) {
+                $values = [...$values, ...Arr::flatten($value)];
+
+                break;
             }
+
+            $values[] = $value;
         }
 
-        return Arr::flatten($parameters);
+        return \array_map(static fn ($value) => match (true) {
+            \is_bool($value) => $value ? 'true' : 'false',
+            \is_scalar($value), $value instanceof Stringable => (string) $value,
+            default => null,
+        }, $values);
     }
 
     /**
@@ -110,73 +120,109 @@ final class RuleFactory
     }
 
     /**
-     * Convert the string parameters to the constructor types: "" and "null" to null
-     * for nullable parameters, "true" and "false" to bool, and the remaining
-     * parameters to a single array for an array parameter, unless it is already an array.
-     * Numeric parameters are only checked, so they reach the constructor as given.
+     * Convert the parameters to the constructor types: "" and "null" to null for nullable
+     * parameters, the FILTER_VALIDATE_BOOLEAN values to bool, numeric values to int or float,
+     * and the remaining parameters to a single array for an array parameter, unless it is
+     * already an array. Empty required parameters and invalid values throw an exception.
      */
     private static function castParameters(string $class, array $parameters): array
     {
         foreach (self::constructorParameters($class) as $index => $parameter) {
-            $type = $parameter->getType();
-
             if (! \array_key_exists($index, $parameters)) {
                 break;
             }
 
-            if ($type?->allowsNull() && self::isNullParameter($parameters[$index])) {
+            $type = $parameter->getType();
+            $typeName = $type instanceof ReflectionNamedType ? $type->getName() : null;
+            $value = $parameters[$index];
+
+            if ($parameter->isVariadic()) {
+                if ($type !== null && ! $type->allowsNull() && \in_array(null, \array_slice($parameters, $index), true)) {
+                    throw self::missingParameter($parameter->getName(), $class);
+                }
+
+                break;
+            }
+
+            if ($type?->allowsNull() && self::isNullParameter($value)) {
                 $parameters[$index] = null;
 
                 continue;
             }
 
-            if ($type !== null && $parameters[$index] === null) {
-                throw new InvalidArgumentException("Missing parameter [{$parameter->getName()}] for rule [{$class}].");
+            if (($type !== null && $value === null) || (! $parameter->isOptional() && self::isEmptyParameter($value))) {
+                throw self::missingParameter($parameter->getName(), $class);
             }
 
-            if ($parameter->isVariadic()) {
-                break;
-            }
+            if ($typeName === 'array') {
+                $values = \is_array($value) ? $value : \array_slice($parameters, $index);
 
-            if ($type instanceof ReflectionNamedType && $type->getName() === 'array') {
-                if (\is_array($parameters[$index])) {
+                if ($values !== [] && \array_filter($values, static fn ($item) => ! self::isEmptyParameter($item)) === []) {
+                    throw self::missingParameter($parameter->getName(), $class);
+                }
+
+                if (\is_array($value)) {
                     continue;
                 }
 
-                return [...\array_slice($parameters, 0, $index), \array_slice($parameters, $index)];
+                return [...\array_slice($parameters, 0, $index), $values];
             }
 
-            if ($type instanceof ReflectionNamedType
-                && $type->getName() === 'bool'
-                && \is_string($parameters[$index])) {
-                $value = $parameters[$index] === ''
-                    ? null
-                    : \filter_var($parameters[$index], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
-
-                if ($value === null) {
-                    throw new InvalidArgumentException("Invalid boolean parameter [{$parameters[$index]}] for rule [{$class}].");
-                }
-
-                $parameters[$index] = $value;
-            }
-
-            if ($type instanceof ReflectionNamedType
-                && \in_array($type->getName(), ['int', 'float'], true)
-                && \is_string($parameters[$index])
-                && ! self::isNumericParameter($parameters[$index], $type->getName())) {
-                throw new InvalidArgumentException("Invalid numeric parameter [{$parameters[$index]}] for rule [{$class}].");
+            if ($typeName === 'bool') {
+                $parameters[$index] = self::castBoolean($value, $class);
+            } elseif ($typeName === 'int' || $typeName === 'float') {
+                $parameters[$index] = self::castNumber($value, $typeName, $class);
             }
         }
 
         return $parameters;
     }
 
-    /**
-     * Determine if the string parameter can be given to an int or float constructor parameter.
-     */
-    private static function isNumericParameter(string $value, string $type): bool
+    private static function castBoolean(mixed $value, string $class): bool
     {
-        return \is_numeric($value) && ($type === 'float' || (float) (int) $value === (float) $value);
+        if (\is_bool($value)) {
+            return $value;
+        }
+
+        $boolean = (\is_string($value) || \is_int($value)) && $value !== ''
+            ? \filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE)
+            : null;
+
+        return $boolean ?? throw new InvalidArgumentException('Invalid boolean parameter ['.self::describe($value)."] for rule [{$class}].");
+    }
+
+    private static function castNumber(mixed $value, string $type, string $class): int|float
+    {
+        $number = \is_numeric($value) ? $value + 0 : null;
+
+        if ($number !== null && $type === 'float') {
+            return (float) $number;
+        }
+
+        if (\is_int($number)) {
+            return $number;
+        }
+
+        if (\is_float($number) && \floor($number) === $number && \abs($number) < (float) PHP_INT_MAX) {
+            return (int) $number;
+        }
+
+        throw new InvalidArgumentException('Invalid numeric parameter ['.self::describe($value)."] for rule [{$class}].");
+    }
+
+    private static function missingParameter(string $name, string $class): InvalidArgumentException
+    {
+        return new InvalidArgumentException("Missing parameter [{$name}] for rule [{$class}].");
+    }
+
+    private static function describe(mixed $value): string
+    {
+        return \is_scalar($value) ? (string) $value : \get_debug_type($value);
+    }
+
+    private static function isEmptyParameter(mixed $value): bool
+    {
+        return $value === null || $value === '';
     }
 
     /**
@@ -184,7 +230,7 @@ final class RuleFactory
      */
     private static function isNullParameter(mixed $value): bool
     {
-        return $value === null || $value === '' || (\is_string($value) && \strtolower($value) === 'null');
+        return self::isEmptyParameter($value) || (\is_string($value) && \strtolower($value) === 'null');
     }
 
     /**

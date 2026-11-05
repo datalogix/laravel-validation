@@ -305,9 +305,44 @@ test('missing required parameters', function (string $rule) {
     $this->validate(['items' => ['a']], ['items' => $rule])->passes();
 })->throws(InvalidArgumentException::class, 'Missing parameter')->with(['subset:', 'containsAny:', 'multiple:', 'charset:']);
 
-test('invalid numeric parameters', function (string $rule) {
+test('invalid numeric parameters', function (mixed $rule) {
     $this->validate(['name' => 'abcde'], ['name' => $rule])->passes();
-})->throws(InvalidArgumentException::class, 'Invalid numeric parameter')->with(['length:abc', 'length:1,abc', 'length:5.5', 'multiple:abc']);
+})->throws(InvalidArgumentException::class, 'Invalid numeric parameter')->with([
+    'length:abc',
+    'length:1,abc',
+    'length:5.5',
+    'multiple:abc',
+    'out of range' => 'length:9223372036854775808',
+    'infinite' => 'length:1e999',
+    'float in the array syntax' => [[['length', 1.5]]],
+    'array in the array syntax' => [[['length', ['a']]]],
+]);
+
+test('invalid boolean parameters in the array syntax', function () {
+    $this->validate(['domain' => 'example.com'], ['domain' => [['domain', ['a']]]])->passes();
+})->throws(InvalidArgumentException::class, 'Invalid boolean parameter');
+
+test('numeric parameters are converted in messages', function (string $rule, string $message) {
+    $validation = $this->validate(['name' => 'a'], ['name' => $rule]);
+
+    expect($validation->errors()->first('name'))->toEqual($message);
+})->with([
+    ['length:1e1', 'The name field must have a length of at least 10.'],
+    ['length:5.0', 'The name field must have a length of at least 5.'],
+    ['length:05', 'The name field must have a length of at least 5.'],
+]);
+
+test('empty required parameters', function (mixed $rule) {
+    $this->validate(['name' => 'abc'], ['name' => $rule])->passes();
+})->throws(InvalidArgumentException::class, 'Missing parameter')->with([
+    'equals:',
+    'greaterThan:',
+    'extension:,',
+    'subset:,',
+    'containsAny:,',
+    'empty values in the array syntax' => [[['subset', ['', null]]]],
+    'null after the first variadic value' => [[['charset', 'UTF-8', null]]],
+]);
 
 test('valid numeric parameters', function (string $rule) {
     expect($this->validate(['name' => 'abcde'], ['name' => $rule])->passes())->toBeTrue();
@@ -374,6 +409,28 @@ test('placeholders without skipped parameters', function (string $rule, string $
     ['length:20,', '20||20'],
     ['length:20,null', '20||20'],
 ]);
+
+test('placeholders only show the values of an array parameter', function (bool|string $identical) {
+    $validation = $this->validate(['word' => 'zzz'], ['word' => [['containsAny', ['a', 'b'], $identical]]]);
+
+    expect($validation->errors()->first('word'))->toEqual('The word field must contain at least one of the following: a, b.');
+
+    $validation = $this->validate(['word' => 'zzz'], ['word' => [['containsAny', ['a', 'b'], $identical]]], ['contains_any' => ':min|:max']);
+
+    expect($validation->errors()->first('word'))->toEqual('a|b');
+})->with([true, false, 'true']);
+
+test('placeholders ignore parameters that cannot be shown', function () {
+    $validation = $this->validate(['name' => 'abc'], ['name' => [['callback', fn () => false]]], ['callback' => '[:value|:values]']);
+
+    expect($validation->errors()->first('name'))->toEqual('[|]');
+});
+
+test('boolean parameters in the values placeholder', function () {
+    $validation = $this->validate(['name' => 'a'], ['name' => 'length:2,3,0'], ['length' => ':values']);
+
+    expect($validation->errors()->first('name'))->toEqual('2, 3, false');
+});
 
 test('placeholders keep null values of parameters that are not nullable', function () {
     $validation = $this->validate(['name' => 'abc'], ['name' => 'equals:null'], ['equals' => ':value']);

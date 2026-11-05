@@ -49,8 +49,8 @@ $request->validate([
 - Use the Respect rule name in camelCase: `cpf`, `videoUrl:youtube`, `minAge:18`.
 - Parameters are passed to the rule constructor, in order:
   - `true`/`false` (also `1`/`0`, `on`/`off`, `yes`/`no`) for boolean parameters (`domain:false`); any other value, including an empty one, throws an `InvalidArgumentException`.
-  - a parameter typed as a number must be numeric (`length:abc` throws an `InvalidArgumentException`).
-  - an empty value or `null` (any case) skips a nullable parameter (`length:,5`). An empty value for a required parameter (`subset:`) and `length` with both bounds empty (`length:,`) throw an `InvalidArgumentException`.
+  - numbers are converted for numeric parameters (`length:1e1` is 10); `length:abc`, `length:5.5` and integers out of range throw an `InvalidArgumentException`.
+  - an empty value or `null` (any case) skips a nullable parameter (`length:,5`). An empty value for a required parameter (`equals:`, `extension:,`, `subset:,`) and `length` with both bounds empty (`length:,`) throw an `InvalidArgumentException`.
   - for an array parameter, the remaining parameters become the array (`containsAny:foo,bar`, `subset:a,b`). An array given through the array rule syntax is used as is (`[['subset', ['a', 'b']]]`).
 - Rules that require other rules or objects (`each`, `not`, `allOf`, `key` with an inner rule, ...) are not available as string rules.
 - `notBlank`, `notEmpty` and `notOptional` also run on empty or missing values.
@@ -83,7 +83,7 @@ The placeholders are replaced with the rule parameters:
 - `:max`: the second parameter (or the first, when there is only one)
 - `:values`: all parameters, separated by commas
 
-`length` with a single bound uses the `length_min` (`length:10`) or `length_max` (`length:,5`) message, and exclusive bounds use `length_exclusive`, `length_min_exclusive` or `length_max_exclusive` (`length:10,20,false`), and `length` without parameters uses `length_unbounded`, unless you replace the `length` message. You can override these messages with the same keys in your `lang/{locale}/validation.php`. The `uploaded` rule uses the package message instead of Laravel's "failed to upload" line in the locales the package ships (`en` and `pt_BR`), unless you pass a custom message for it. Skipped parameters are left out of `:values` and replaced with an empty value in `:value`, `:min` and `:max`.
+`length` with a single bound uses the `length_min` (`length:10`) or `length_max` (`length:,5`) message, and exclusive bounds use `length_exclusive`, `length_min_exclusive` or `length_max_exclusive` (`length:10,20,false`), and `length` without parameters uses `length_unbounded`, unless you replace the `length` message. You can override these messages with the same keys in your `lang/{locale}/validation.php`. The `uploaded` rule uses the package message instead of Laravel's "failed to upload" line unless you pass a custom message for it or define the line in a locale the package does not ship (it ships `en` and `pt_BR`). Skipped parameters are left out of `:values` and replaced with an empty value in `:value`, `:min` and `:max`, and an array parameter shows only its values.
 
 ## Available rules
 
