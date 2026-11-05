@@ -64,7 +64,7 @@ final class Validator extends BaseValidator
         $isDefault = $message === $key
             || (\in_array($rule, self::FRAMEWORK_KEY_RULES, true)
                 && $message === $this->translator->get($key)
-                && $this->hasPackageLine($key));
+                && ! $this->keepsApplicationLine($key));
 
         if ($isDefault && $this->isRespectRule($rule)) {
             $translated = $this->translator->get('laravel-validation::'.$key);
@@ -139,12 +139,13 @@ final class Validator extends BaseValidator
     }
 
     /**
-     * Determine if the package has the line in the current locale, without the fallback locale.
+     * Determine if the line was defined for the current locale, which the package does not ship.
      */
-    private function hasPackageLine(string $key): bool
+    private function keepsApplicationLine(string $key): bool
     {
-        return ! $this->translator instanceof LaravelTranslator
-            || $this->translator->hasForLocale('laravel-validation::'.$key);
+        return $this->translator instanceof LaravelTranslator
+            && $this->translator->hasForLocale($key)
+            && ! $this->translator->hasForLocale('laravel-validation::'.$key);
     }
 
     /**

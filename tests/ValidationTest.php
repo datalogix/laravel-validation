@@ -438,6 +438,14 @@ test('application message for rules with a framework key in a locale without pac
     expect($validation->errors()->first('file'))->toEqual('Mensaje de la aplicación.');
 });
 
+test('package message for rules with a framework key in a locale without any line', function () {
+    $this->app->setLocale('es');
+
+    $validation = $this->validate(['file' => 'abc'], ['file' => 'uploaded']);
+
+    expect($validation->errors()->first('file'))->toEqual('The file field must be an uploaded file.');
+});
+
 test('package message for rules with a framework key in a locale with package messages', function () {
     $this->app->setLocale('pt_BR');
     $this->app['translator']->addLines(['validation.uploaded' => 'Falha no envio.'], 'pt_BR');
