@@ -4,6 +4,7 @@ namespace Datalogix\Validation;
 
 use Illuminate\Contracts\Translation\Translator;
 use Illuminate\Support\Str;
+use Illuminate\Translation\Translator as LaravelTranslator;
 use Illuminate\Validation\Validator as BaseValidator;
 
 final class Validator extends BaseValidator
@@ -14,6 +15,14 @@ final class Validator extends BaseValidator
      * @var string[]
      */
     private const IMPLICIT_RULES = ['NotBlank', 'NotEmpty', 'NotOptional'];
+
+    /**
+     * The Respect rules whose message key also exists in Laravel's validation lines,
+     * which would otherwise hide the package message.
+     *
+     * @var string[]
+     */
+    private const FRAMEWORK_KEY_RULES = ['Uploaded'];
 
     public function __construct(
         Translator $translator,
@@ -52,7 +61,12 @@ final class Validator extends BaseValidator
         $message = parent::getMessage($attribute, $rule);
         $key = 'validation.'.Str::snake($rule);
 
-        if ($message === $key && $this->isRespectRule($rule)) {
+        $isDefault = $message === $key
+            || (\in_array($rule, self::FRAMEWORK_KEY_RULES, true)
+                && $message === $this->translator->get($key)
+                && ! $this->keepsApplicationLine($key));
+
+        if ($isDefault && $this->isRespectRule($rule)) {
             $translated = $this->translator->get('laravel-validation::'.$key);
 
             if ($translated !== 'laravel-validation::'.$key) {
@@ -74,17 +88,64 @@ final class Validator extends BaseValidator
      */
     public function makeReplacements($message, $attribute, $rule, $parameters)
     {
-        $message = parent::makeReplacements($message, $attribute, $rule, $parameters);
-
         if (! $this->isRespectRule($rule)) {
-            return $message;
+            return parent::makeReplacements($message, $attribute, $rule, $parameters);
         }
+
+        if ($rule === 'Length') {
+            $message = $this->lengthMessage($message, $parameters);
+        }
+
+        $message = parent::makeReplacements($message, $attribute, $rule, $parameters);
+        $parameters = RuleFactory::messageParameters($rule, $parameters);
 
         return \str_replace(
             [':values', ':value', ':min', ':max'],
-            [\implode(', ', $parameters), $parameters[0] ?? '', $parameters[0] ?? '', $parameters[1] ?? $parameters[0] ?? ''],
+            [
+                \implode(', ', \array_filter($parameters, static fn ($parameter) => $parameter !== null)),
+                $parameters[0] ?? '',
+                $parameters[0] ?? '',
+                \array_key_exists(1, $parameters) ? ($parameters[1] ?? '') : ($parameters[0] ?? ''),
+            ],
             $message
         );
+    }
+
+    /**
+     * Use the "at least" or "at most" message when the length rule has only one bound,
+     * the "greater than" or "less than" message when the bounds are exclusive, and
+     * the "measurable" message without bounds, unless the application replaced the package message.
+     */
+    private function lengthMessage(string $message, array $parameters): string
+    {
+        if ($message !== $this->translator->get('laravel-validation::validation.length')) {
+            return $message;
+        }
+
+        [$min, $max, $inclusive] = RuleFactory::cast('Length', $parameters) + [null, null, true];
+
+        $key = 'validation.length'
+            .match (true) {
+                $min !== null && $max !== null => '',
+                $min !== null => '_min',
+                $max !== null => '_max',
+                default => '_unbounded',
+            }
+        .($inclusive ? '' : '_exclusive');
+
+        $translated = $this->translator->get($key);
+
+        return $translated !== $key ? $translated : $this->translator->get('laravel-validation::'.$key);
+    }
+
+    /**
+     * Determine if the line was defined for the current locale, which the package does not ship.
+     */
+    private function keepsApplicationLine(string $key): bool
+    {
+        return $this->translator instanceof LaravelTranslator
+            && $this->translator->hasForLocale($key)
+            && ! $this->translator->hasForLocale('laravel-validation::'.$key);
     }
 
     /**

@@ -1,0 +1,20 @@
+name: datalogix
+
+# The only workflow file a package needs, as .github/workflows/datalogix.yml. Every event below is handled by
+# datalogix/workflows; jobs that do not apply to an event are skipped.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  # Required when the repository uses a merge queue
+  merge_group:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pipeline:
+    uses: datalogix/workflows/.github/workflows/package.yml@v2
+    # Only CODECOV_TOKEN is used, for coverage reports
+    secrets: inherit

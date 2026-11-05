@@ -2,7 +2,7 @@
 
 [![Latest Stable Version](https://poser.pugx.org/datalogix/laravel-validation/version)](https://packagist.org/packages/datalogix/laravel-validation)
 [![Total Downloads](https://poser.pugx.org/datalogix/laravel-validation/downloads)](https://packagist.org/packages/datalogix/laravel-validation)
-[![tests](https://github.com/datalogix/laravel-validation/workflows/tests/badge.svg)](https://github.com/datalogix/laravel-validation/actions)
+[![datalogix](https://github.com/datalogix/laravel-validation/actions/workflows/datalogix.yml/badge.svg)](https://github.com/datalogix/laravel-validation/actions/workflows/datalogix.yml)
 [![codecov](https://codecov.io/gh/datalogix/laravel-validation/branch/main/graph/badge.svg)](https://codecov.io/gh/datalogix/laravel-validation)
 [![License](https://poser.pugx.org/datalogix/laravel-validation/license)](https://packagist.org/packages/datalogix/laravel-validation)
 
@@ -18,130 +18,45 @@ composer require datalogix/laravel-validation
 
 The package will automatically register itself.
 
+## Requirements
+
+- PHP 8.2+
+- Laravel 12 or 13
+
+Some rules need optional dependencies:
+
+| Rule | Requires |
+| --- | --- |
+| `iban` | `ext-bcmath` |
+| `mimetype` | `ext-fileinfo` |
+| `phone` with a country code (`phone:BR`) | `composer require giggsey/libphonenumber-for-php-lite` |
+
 ## Usage
 
+Use any Respect Validation rule as a Laravel string rule:
+
 ```php
-$rules = [
-    'cpf'               => ['cpf'],
-    'cnpj'              => ['cnpj'],
-    'cnh'               => ['cnh'],
-    'minimumAge'        => ['minimumAge:20'],
-    'callback'          => ['callback:is_int'],
-    'charset'           => ['charset:ASCII'],
-    'consonant'         => ['consonant'],
-    'vowel'             => ['vowel'],
-    'alnum'             => ['alnum:-'],
-    'digit'             => ['digit: '],
-    'alpha'             => ['alpha'],
-    'countryCode'       => ['countryCode'],
-    'creditCard'        => ['digit', 'creditCard'],
-    'domain'            => ['domain'],
-    'directory'         => ['directory'],
-    'fileExists'        => ['fileExists'],
-    'equals'            => ['equals:banana'],
-    'even'              => ['even'],
-    'floatVal'          => ['floatVal'],
-    'float'             => ['float'],
-    'graph'             => ['graph'],
-    'instance'          => ['instance:DateTime'],
-    'int'               => ['int'],
-    'leapDate'          => ['leapDate:Y-m-d'],
-    'leapYear'          => ['leapYear'],
-    'arrayVal'          => ['arrayVal'],
-    'Arr'               => ['arr'],
-    'multiple'          => ['multiple:3'],
-    'negative'          => ['negative'],
-    'noWhitespace'      => ['noWhitespace'],
-    'nullValue'         => ['nullValue'],
-    'objectType'        => ['objectType'],
-    'odd'               => ['odd'],
-    'perfectSquare'     => ['perfectSquare'],
-    'positive'          => ['positive'],
-    'primeNumber'       => ['primeNumber'],
-    'punct'             => ['punct'],
-    'readable'          => ['readable'],
-    'roman'             => ['roman'],
-    'slug'              => ['slug'],
-    'space'             => ['space:b'],
-    'tld'               => ['tld'],
-    'version'           => ['version'],
-    'xdigit'            => ['xdigit'],
-    'writable'          => ['writable'],
-    'alwaysValid'       => ['alwaysValid'],
-    'boolType'          => ['boolType'],
-    'youtube'           => ['videoUrl:youtube'],
-    'vimeo'             => ['videoUrl:vimeo'],
-    'video1'            => ['videoUrl'],
-    'video2'            => ['videoUrl'],
-    'age'               => ['minAge:18', 'maxAge:60'],
-    'state'             => ['subdivisionCode:BR'],
-];
-
-$data = [
-    'cpf'               => '22205417118',
-    'cnpj'              => '68518321000116',
-    'cnh'               => '02650306461',
-    'minimumAge'        => '1990-11-13',
-    'callback'          => 20,
-    'charset'           => 'acucar',
-    'consonant'         => 'dcfg',
-    'vowel'             => 'aeiou',
-    'alnum'             => 'banana-123',
-    'digit'             => '120129 21212',
-    'alpha'             => 'banana',
-    'countryCode'       => 'BR',
-    'creditCard'        => '5555666677778884',
-    'domain'            => 'google.com.br',
-    'directory'         => __DIR__,
-    'fileExists'        => __FILE__,
-    'equals'            => 'banana',
-    'even'              => 8,
-    'floatVal'          => 9.8,
-    'float'             => 9.8,
-    'graph'             => 'LKM@#$%4;',
-    'instance'          => new \Datetime(),
-    'int'               => 9,
-    'leapDate'          => '1988-02-29',
-    'leapYear'          => '1988',
-    'arrayVal'          => ['Brazil'],
-    'Arr'               => ['Brazil'],
-    'multiple'          => '9',
-    'negative'          => '-10',
-    'noWhitespace'      => 'laravelBrazil',
-    'nullValue'         => null,
-    'objectType'        => new \stdClass(),
-    'odd'               => 3,
-    'perfectSquare'     => 25,
-    'positive'          => 1,
-    'primeNumber'       => 7,
-    'punct'             => '&,.;[]',
-    'readable'          => __FILE__,
-    'roman'             => 'VI',
-    'slug'              => 'laravel-brazil',
-    'space'             => '              b      ',
-    'tld'               => 'com',
-    'version'           => '1.0.0',
-    'xdigit'            => 'abc123',
-    'writable'          => __FILE__,
-    'alwaysValid'       => '@#$_',
-    'boolType'          => \is_int(2),
-    'youtube'           => 'http://youtu.be/l2gLWaGatFA',
-    'vimeo'             => 'http://vimeo.com/33677985',
-    'video1'            => 'https://youtu.be/l2gLWaGatFA',
-    'video2'            => 'https://vimeo.com/33677985',
-    'age'               => '1990-11-13',
-    'state'             => 'SP',
-];
-
-$validator = \Illuminate\Support\Facades\Validator::make($data, $rules);
-
-if ($validator->passes()) {
-    // Do something
-}
+$request->validate([
+    'cpf' => ['required', 'cpf'],
+    'birthdate' => ['required', 'minAge:18'],
+    'video' => ['nullable', 'videoUrl:youtube'],
+    'tags' => ['array', 'subset:php,laravel'],
+]);
 ```
 
+### Rule names and parameters
+
+- Use the Respect rule name in camelCase: `cpf`, `videoUrl:youtube`, `minAge:18`.
+- Parameters are passed to the rule constructor, in order:
+  - `true`/`false` (also `1`/`0`, `on`/`off`, `yes`/`no`) for boolean parameters (`domain:false`); any other value, including an empty one, throws an `InvalidArgumentException`.
+  - numbers are converted for numeric parameters (`length:1e1` is 10); `length:abc`, `length:5.5` and integers out of range throw an `InvalidArgumentException`.
+  - an empty value or `null` (any case) skips a nullable parameter (`length:,5`). An empty value for any other typed parameter (`extension:,`, `countryCode:,`), an empty item in a list (`subset:a,`) and `length` with both bounds empty (`length:,`) throw an `InvalidArgumentException`. Untyped parameters accept it, so `equals:` compares with an empty value.
+  - for an array parameter, the remaining parameters become the array (`containsAny:foo,bar`, `subset:a,b`). An array given through the array rule syntax is used as is (`[['subset', ['a', 'b']]]`).
+- Rules that require other rules or objects (`each`, `not`, `allOf`, `key` with an inner rule, ...) are not available as string rules.
+- `notBlank`, `notEmpty` and `notOptional` also run on empty or missing values.
+
 > [!NOTE]
-> Laravel's built-in rules (`numeric`, `email`, `regex`, `file`, `json`, `ends_with`, `lowercase`, `uppercase`, `contains`, `string`, etc.) and rules registered with `Validator::extend()` always take precedence over Respect rules with the same name.
+> Laravel's built-in rules (`numeric`, `email`, `regex`, `file`, `image`, `json`, `ends_with`, `lowercase`, `uppercase`, `contains`, `string`, `base64` on Laravel 13, etc.) and rules registered with `Validator::extend()` always take precedence over Respect rules with the same name. Laravel also turns `int` and `bool` into `integer` and `boolean`; use `intVal` and `boolType` for the Respect rules.
 
 > [!WARNING]
 > This package registers a custom validator resolver. If another package also
@@ -153,10 +68,10 @@ The package ships with error messages in English (`en`) and Brazilian Portuguese
 
 ```php
 // lang/en/validation.php
-'cpf' => 'The :attribute is not a valid CPF.',
+'cpf' => 'The :attribute field is not a valid CPF.',
 ```
 
-You can also publish the package translations:
+You can also publish the package translations to `lang/vendor/laravel-validation`:
 
 ```bash
 php artisan vendor:publish --tag=laravel-validation-lang
@@ -168,12 +83,12 @@ The placeholders are replaced with the rule parameters:
 - `:max`: the second parameter (or the first, when there is only one)
 - `:values`: all parameters, separated by commas
 
-## For more validation rules
+`length` with a single bound uses the `length_min` (`length:10`) or `length_max` (`length:,5`) message, and exclusive bounds use `length_exclusive`, `length_min_exclusive` or `length_max_exclusive` (`length:10,20,false`), and `length` without parameters uses `length_unbounded`, unless you replace the `length` message. You can override these messages with the same keys in your `lang/{locale}/validation.php`. The `uploaded` rule uses the package message instead of Laravel's "failed to upload" line unless you pass a custom message for it or define the line in a locale the package does not ship (it ships `en` and `pt_BR`). The package cannot tell your line from one published by a translation package, so a published `validation.uploaded` in another locale keeps Laravel's "failed to upload" meaning; replace that line or pass a custom message. Skipped parameters are left out of `:values` and replaced with an empty value in `:value`, `:min` and `:max`, and an array parameter shows only its values.
 
-See all available rules here:
+## Available rules
 
-https://respect-validation.readthedocs.io/en/latest/list-of-rules/
+Every [Respect Validation 2.x rule](https://respect-validation.readthedocs.io/en/2.4/08-list-of-rules-by-category/) can be used, written in camelCase (e.g. `VideoUrl` → `videoUrl`). See also the [Respect Validation repository](https://github.com/Respect/Validation).
 
-Repository of Respect Validation:
+## License
 
-https://github.com/Respect/Validation
+MIT License. See [LICENSE](LICENSE).

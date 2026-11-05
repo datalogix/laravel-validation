@@ -3,6 +3,7 @@
 namespace Datalogix\Validation;
 
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Validation\Factory;
 
 class ValidationServiceProvider extends ServiceProvider
 {
@@ -21,7 +22,7 @@ class ValidationServiceProvider extends ServiceProvider
             ], 'laravel-validation-lang');
         }
 
-        $this->callAfterResolving('validator', static function ($factory) {
+        $this->callAfterResolving('validator', static function (Factory $factory) {
             $factory->resolver(static fn ($translator, $data, $rules, $messages, $attributes) => new Validator(
                 $translator, $data, $rules, $messages, $attributes
             ));
