@@ -89,6 +89,18 @@ The placeholders are replaced with the rule parameters:
 
 Every [Respect Validation 2.x rule](https://respect-validation.readthedocs.io/en/2.4/08-list-of-rules-by-category/) can be used, written in camelCase (e.g. `VideoUrl` → `videoUrl`). See also the [Respect Validation repository](https://github.com/Respect/Validation).
 
+## Laravel Boost
+
+The package ships an AI guideline for [Laravel Boost](https://laravel.com/docs/boost). To install it, select `datalogix/laravel-validation` when `php artisan boost:install` asks for third-party guidelines.
+
+With `--no-interaction`, Boost only includes the packages listed in `boost.json`, so add the package there first:
+
+```json
+{
+    "packages": ["datalogix/laravel-validation"]
+}
+```
+
 ## License
 
 MIT License. See [LICENSE](LICENSE).
