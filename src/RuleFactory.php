@@ -121,7 +121,7 @@ final class RuleFactory
 
     /**
      * Convert the parameters to the constructor types: "" and "null" to null for nullable
-     * parameters, the FILTER_VALIDATE_BOOLEAN values to bool, numeric values to int or float,
+     * parameters, the FILTER_VALIDATE_BOOLEAN values to bool, numeric values to int,
      * and the remaining parameters to a single array for an array parameter, unless it is
      * already an array. Empty required parameters and invalid values throw an exception.
      */
@@ -170,8 +170,8 @@ final class RuleFactory
 
             if ($typeName === 'bool') {
                 $parameters[$index] = self::castBoolean($value, $class);
-            } elseif ($typeName === 'int' || $typeName === 'float') {
-                $parameters[$index] = self::castNumber($value, $typeName, $class);
+            } elseif ($typeName === 'int') {
+                $parameters[$index] = self::castInteger($value, $class);
             }
         }
 
@@ -191,13 +191,9 @@ final class RuleFactory
         return $boolean ?? throw new InvalidArgumentException('Invalid boolean parameter ['.self::describe($value)."] for rule [{$class}].");
     }
 
-    private static function castNumber(mixed $value, string $type, string $class): int|float
+    private static function castInteger(mixed $value, string $class): int
     {
         $number = \is_numeric($value) ? $value + 0 : null;
-
-        if ($number !== null && $type === 'float') {
-            return (float) $number;
-        }
 
         if (\is_int($number)) {
             return $number;
