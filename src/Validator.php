@@ -4,6 +4,7 @@ namespace Datalogix\Validation;
 
 use Illuminate\Contracts\Translation\Translator;
 use Illuminate\Support\Str;
+use Illuminate\Translation\Translator as LaravelTranslator;
 use Illuminate\Validation\Validator as BaseValidator;
 
 final class Validator extends BaseValidator
@@ -61,7 +62,9 @@ final class Validator extends BaseValidator
         $key = 'validation.'.Str::snake($rule);
 
         $isDefault = $message === $key
-            || (\in_array($rule, self::FRAMEWORK_KEY_RULES, true) && $message === $this->translator->get($key));
+            || (\in_array($rule, self::FRAMEWORK_KEY_RULES, true)
+                && $message === $this->translator->get($key)
+                && $this->hasPackageLine($key));
 
         if ($isDefault && $this->isRespectRule($rule)) {
             $translated = $this->translator->get('laravel-validation::'.$key);
@@ -123,6 +126,15 @@ final class Validator extends BaseValidator
         $translated = $this->translator->get($key);
 
         return $translated !== $key ? $translated : $this->translator->get('laravel-validation::'.$key);
+    }
+
+    /**
+     * Determine if the package has the line in the current locale, without the fallback locale.
+     */
+    private function hasPackageLine(string $key): bool
+    {
+        return ! $this->translator instanceof LaravelTranslator
+            || $this->translator->hasForLocale('laravel-validation::'.$key);
     }
 
     /**

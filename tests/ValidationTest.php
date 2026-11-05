@@ -361,6 +361,24 @@ test('package message for rules with a framework key', function () {
     expect($validation->errors()->first('file'))->toEqual('Custom upload message.');
 });
 
+test('application message for rules with a framework key in a locale without package messages', function () {
+    $this->app->setLocale('es');
+    $this->app['translator']->addLines(['validation.uploaded' => 'Mensaje de la aplicación.'], 'es');
+
+    $validation = $this->validate(['file' => 'abc'], ['file' => 'uploaded']);
+
+    expect($validation->errors()->first('file'))->toEqual('Mensaje de la aplicación.');
+});
+
+test('package message for rules with a framework key in a locale with package messages', function () {
+    $this->app->setLocale('pt_BR');
+    $this->app['translator']->addLines(['validation.uploaded' => 'Falha no envio.'], 'pt_BR');
+
+    $validation = $this->validate(['file' => 'abc'], ['file' => 'uploaded']);
+
+    expect($validation->errors()->first('file'))->toEqual('O campo file deve ser um arquivo enviado.');
+});
+
 test('locales have the same keys and placeholders', function () {
     $en = require __DIR__.'/../lang/en/validation.php';
     $ptBr = require __DIR__.'/../lang/pt_BR/validation.php';
