@@ -77,6 +77,7 @@ return [
     'length_max_exclusive' => 'The :attribute field must have a length less than :max.',
     'length_min' => 'The :attribute field must have a length of at least :min.',
     'length_min_exclusive' => 'The :attribute field must have a length greater than :min.',
+    'length_unbounded' => 'The :attribute field must have a measurable length.',
     'less_than' => 'The :attribute field must be less than :value.',
     'luhn' => 'The :attribute field must be a valid Luhn number.',
     'max_age' => 'The :attribute field must have a maximum age of :value years.',

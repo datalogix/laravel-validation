@@ -269,7 +269,7 @@ test('max placeholder', function () {
 });
 
 test('rule errors are not hidden', function () {
-    $this->expectException(TypeError::class);
+    $this->expectException(InvalidArgumentException::class);
 
     $this->validate(['number' => 9], ['number' => 'multiple:abc'])->passes();
 });
@@ -295,12 +295,51 @@ test('boolean parameters accepted by filter_var', function (string $rule, bool $
 
 test('invalid boolean parameters', function (string $rule) {
     $this->validate(['domain' => 'example.notatld'], ['domain' => $rule])->passes();
-})->throws(InvalidArgumentException::class)->with(['domain:abc', 'domain:2', 'domain:maybe']);
+})->throws(InvalidArgumentException::class)->with(['domain:abc', 'domain:2', 'domain:maybe', 'domain:', 'domain:,']);
+
+test('empty boolean parameter in the length rule', function () {
+    $this->validate(['name' => 'abcde'], ['name' => 'length:5,10,'])->passes();
+})->throws(InvalidArgumentException::class);
+
+test('missing required parameters', function (string $rule) {
+    $this->validate(['items' => ['a']], ['items' => $rule])->passes();
+})->throws(InvalidArgumentException::class, 'Missing parameter')->with(['subset:', 'containsAny:', 'multiple:', 'charset:']);
+
+test('invalid numeric parameters', function (string $rule) {
+    $this->validate(['name' => 'abcde'], ['name' => $rule])->passes();
+})->throws(InvalidArgumentException::class, 'Invalid numeric parameter')->with(['length:abc', 'length:1,abc', 'length:5.5', 'multiple:abc']);
+
+test('valid numeric parameters', function (string $rule) {
+    expect($this->validate(['name' => 'abcde'], ['name' => $rule])->passes())->toBeTrue();
+})->with(['length:5', 'length:05', 'length:5.0', 'length:1e0,5']);
+
+test('length without bounds', function (string $rule) {
+    $this->validate(['name' => 'abcde'], ['name' => $rule])->passes();
+})->throws(InvalidArgumentException::class, 'requires at least one bound')->with(['length:', 'length:,', 'length:null,null', 'length:,,false']);
+
+test('length without parameters', function () {
+    expect($this->validate(['name' => 'abcde'], ['name' => 'length'])->passes())->toBeTrue();
+
+    $validation = $this->validate(['name' => true], ['name' => 'length']);
+
+    expect($validation->errors()->first('name'))->toEqual('The name field must have a measurable length.');
+});
+
+test('parameters after a null are cast', function () {
+    $tenCharacters = str_repeat('x', 10);
+
+    expect($this->validate(['name' => $tenCharacters], ['name' => [['length', null, '10', 'false']]])->passes())->toBeFalse();
+    expect($this->validate(['name' => $tenCharacters], ['name' => [['length', null, '10', 'true']]])->passes())->toBeTrue();
+
+    $validation = $this->validate(['name' => $tenCharacters], ['name' => [['length', null, '10', 'false']]]);
+
+    expect($validation->errors()->first('name'))->toEqual('The name field must have a length less than 10.');
+});
 
 test('null parameters', function (string $rule) {
     expect($this->validate(['name' => 'abcde'], ['name' => $rule])->passes())->toBeTrue();
     expect($this->validate(['name' => 'abcdef'], ['name' => $rule])->passes())->toBeFalse();
-})->with(['length:,5', 'length:null,5']);
+})->with(['length:,5', 'length:null,5', 'length:NULL,5']);
 
 test('array parameters', function () {
     expect($this->validate(['word' => 'banana'], ['word' => 'containsAny:nan,xyz'])->passes())->toBeTrue();
@@ -311,6 +350,35 @@ test('array parameters', function () {
     $validation = $this->validate(['word' => 'x'], ['word' => 'containsAny:a,b']);
 
     expect($validation->errors()->first('word'))->toEqual('The word field must contain at least one of the following: a, b.');
+});
+
+test('array parameters given as an array', function () {
+    expect($this->validate(['items' => ['a']], ['items' => [['subset', ['a', 'b']]]])->passes())->toBeTrue();
+    expect($this->validate(['word' => 'banana'], ['word' => [['containsAny', ['nan', 'xyz']]]])->passes())->toBeTrue();
+    expect($this->validate(['word' => 'banana'], ['word' => [['containsAny', ['NAN'], 'true']]])->passes())->toBeFalse();
+    expect($this->validate(['word' => 'banana'], ['word' => [['containsAny', ['NAN'], 'false']]])->passes())->toBeTrue();
+
+    $validation = $this->validate(['items' => ['c']], ['items' => [['subset', ['a', 'b']]]]);
+
+    expect($validation->errors()->first('items'))->toContain('a, b');
+});
+
+test('placeholders without skipped parameters', function (string $rule, string $message) {
+    $validation = $this->validate(['name' => 'abcdefghij'], ['name' => $rule], ['length' => ':min|:max|:values']);
+
+    expect($validation->errors()->first('name'))->toEqual($message);
+})->with([
+    ['length:null,5', '|5|5'],
+    ['length:NULL,5', '|5|5'],
+    ['length:,5', '|5|5'],
+    ['length:20,', '20||20'],
+    ['length:20,null', '20||20'],
+]);
+
+test('placeholders keep null values of parameters that are not nullable', function () {
+    $validation = $this->validate(['name' => 'abc'], ['name' => 'equals:null'], ['equals' => ':value']);
+
+    expect($validation->errors()->first('name'))->toEqual('null');
 });
 
 test('values placeholder', function () {

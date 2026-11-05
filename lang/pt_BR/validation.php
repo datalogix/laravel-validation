@@ -77,6 +77,7 @@ return [
     'length_max_exclusive' => 'O campo :attribute deve ter comprimento menor que :max.',
     'length_min' => 'O campo :attribute deve ter comprimento de no mínimo :min.',
     'length_min_exclusive' => 'O campo :attribute deve ter comprimento maior que :min.',
+    'length_unbounded' => 'O campo :attribute deve ter um comprimento mensurável.',
     'less_than' => 'O campo :attribute deve ser menor que :value.',
     'luhn' => 'O campo :attribute deve ser um número válido pelo algoritmo de Luhn.',
     'max_age' => 'O campo :attribute deve ter uma idade máxima de :value anos.',

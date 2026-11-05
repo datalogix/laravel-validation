@@ -97,31 +97,41 @@ final class Validator extends BaseValidator
         }
 
         $message = parent::makeReplacements($message, $attribute, $rule, $parameters);
+        $parameters = RuleFactory::messageParameters($rule, $parameters);
 
         return \str_replace(
             [':values', ':value', ':min', ':max'],
-            [\implode(', ', $parameters), $parameters[0] ?? '', $parameters[0] ?? '', $parameters[1] ?? $parameters[0] ?? ''],
+            [
+                \implode(', ', \array_filter($parameters, static fn ($parameter) => $parameter !== null)),
+                $parameters[0] ?? '',
+                $parameters[0] ?? '',
+                \array_key_exists(1, $parameters) ? ($parameters[1] ?? '') : ($parameters[0] ?? ''),
+            ],
             $message
         );
     }
 
     /**
      * Use the "at least" or "at most" message when the length rule has only one bound,
-     * and the "greater than" or "less than" message when the bounds are exclusive,
-     * unless the application replaced the package message.
+     * the "greater than" or "less than" message when the bounds are exclusive, and
+     * the "measurable" message without bounds, unless the application replaced the package message.
      */
     private function lengthMessage(string $message, array $parameters): string
     {
-        $hasMin = ! RuleFactory::isNullParameter($parameters[0] ?? null);
-        $hasMax = ! RuleFactory::isNullParameter($parameters[1] ?? null);
-
-        if ($message !== $this->translator->get('laravel-validation::validation.length') || (! $hasMin && ! $hasMax)) {
+        if ($message !== $this->translator->get('laravel-validation::validation.length')) {
             return $message;
         }
 
+        [$min, $max, $inclusive] = RuleFactory::cast('Length', $parameters) + [null, null, true];
+
         $key = 'validation.length'
-            .($hasMin === $hasMax ? '' : ($hasMin ? '_min' : '_max'))
-            .(\filter_var($parameters[2] ?? true, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) === false ? '_exclusive' : '');
+            .match (true) {
+                $min !== null && $max !== null => '',
+                $min !== null => '_min',
+                $max !== null => '_max',
+                default => '_unbounded',
+            }
+        .($inclusive ? '' : '_exclusive');
 
         $translated = $this->translator->get($key);
 
