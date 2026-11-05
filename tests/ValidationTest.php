@@ -335,13 +335,56 @@ test('numeric parameters are converted in messages', function (string $rule, str
 test('empty required parameters', function (mixed $rule) {
     $this->validate(['name' => 'abc'], ['name' => $rule])->passes();
 })->throws(InvalidArgumentException::class, 'Missing parameter')->with([
-    'equals:',
-    'greaterThan:',
     'extension:,',
     'subset:,',
     'containsAny:,',
+    'countryCode:,',
+    'charset:,',
+    'empty item in a list' => 'subset:a,',
+    'empty item in a list of needles' => 'containsAny:a,',
     'empty values in the array syntax' => [[['subset', ['', null]]]],
     'null after the first variadic value' => [[['charset', 'UTF-8', null]]],
+    'empty after the first variadic value' => [[['charset', 'UTF-8', '']]],
+]);
+
+test('untyped parameters accept empty values', function (mixed $rule) {
+    expect($this->validate(['name' => 'abc'], ['name' => $rule])->passes())->toBeFalse();
+})->with([
+    'equals:',
+    'empty string' => [[['equals', '']]],
+    'null' => [[['identical', null]]],
+]);
+
+test('a real array can hold empty values', function () {
+    expect($this->validate(['items' => ['']], ['items' => [['subset', ['a', '']]]])->passes())->toBeTrue();
+});
+
+test('invalid parameters of other types', function (mixed $rule) {
+    $this->validate(['name' => 'abc'], ['name' => $rule])->passes();
+})->throws(InvalidArgumentException::class, 'Invalid parameter')->with([
+    'array for a string' => [[['extension', ['a']]]],
+    'string for a callable' => 'callback:nonexistent',
+    'string for a rule' => 'key:foo,bar',
+    'string for an object' => 'mimetype:a,b',
+]);
+
+test('failures added by hand with invalid parameters', function (string $rule, array $parameters, string $message) {
+    $validation = $this->validate(['name' => 'abc'], ['name' => 'string']);
+    $validation->after(fn ($validator) => $validator->addFailure('name', $rule, $parameters));
+
+    expect($validation->errors()->first('name'))->toEqual($message);
+})->with([
+    ['multiple', ['abc'], 'The name field must be a multiple of abc.'],
+    ['length', ['abc', '5'], 'The name field must have a length between abc and 5.'],
+]);
+
+test('placeholders ignore parameters the constructor does not receive', function (string $rule, string $message) {
+    $validation = $this->validate(['number' => 3], ['number' => $rule], ['multiple' => ':values', 'length' => ':values']);
+
+    expect($validation->errors()->first('number'))->toEqual($message);
+})->with([
+    ['multiple:2,abc', '2'],
+    ['length:5,6,true,zzz', '5, 6, true'],
 ]);
 
 test('valid numeric parameters', function (string $rule) {

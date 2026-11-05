@@ -64,26 +64,39 @@ final class RuleFactory
     }
 
     /**
-     * Convert the parameters as the rule constructor receives them.
+     * Convert the parameters to build a message: it never throws, because a failure
+     * can be added by hand with any parameters, which are then used as given.
      *
      * @internal
      */
     public static function cast(string $rule, array $parameters): array
     {
-        return self::castParameters(self::className($rule), $parameters);
+        try {
+            return self::castParameters(self::className($rule), $parameters);
+        } catch (InvalidArgumentException) {
+            return $parameters;
+        }
     }
 
     /**
      * Get the converted parameters as they appear in a message: the values of an array
-     * parameter instead of the array and what follows it, and null for what cannot be shown.
+     * parameter instead of the array and what follows it, without the parameters the
+     * constructor ignores, and null for what cannot be shown.
      *
      * @internal
      */
     public static function messageParameters(string $rule, array $parameters): array
     {
+        $constructorParameters = self::constructorParameters(self::className($rule));
+        $parameters = self::cast($rule, $parameters);
+
+        if (! \end($constructorParameters) || ! \end($constructorParameters)->isVariadic()) {
+            $parameters = \array_slice($parameters, 0, \count($constructorParameters));
+        }
+
         $values = [];
 
-        foreach (self::cast($rule, $parameters) as $value) {
+        foreach ($parameters as $value) {
             if (\is_array($value)) {
                 $values = [...$values, ...Arr::flatten($value)];
 
@@ -123,7 +136,8 @@ final class RuleFactory
      * Convert the parameters to the constructor types: "" and "null" to null for nullable
      * parameters, the FILTER_VALIDATE_BOOLEAN values to bool, numeric values to int,
      * and the remaining parameters to a single array for an array parameter, unless it is
-     * already an array. Empty required parameters and invalid values throw an exception.
+     * already an array. Empty typed parameters and invalid values throw an exception, while
+     * untyped parameters accept anything, because an empty value can be what they compare to.
      */
     private static function castParameters(string $class, array $parameters): array
     {
@@ -137,7 +151,9 @@ final class RuleFactory
             $value = $parameters[$index];
 
             if ($parameter->isVariadic()) {
-                if ($type !== null && ! $type->allowsNull() && \in_array(null, \array_slice($parameters, $index), true)) {
+                $values = \array_slice($parameters, $index);
+
+                if ($type !== null && ! $type->allowsNull() && \array_filter($values, self::isEmptyParameter(...)) !== []) {
                     throw self::missingParameter($parameter->getName(), $class);
                 }
 
@@ -150,14 +166,17 @@ final class RuleFactory
                 continue;
             }
 
-            if (($type !== null && $value === null) || (! $parameter->isOptional() && self::isEmptyParameter($value))) {
+            if ($type !== null && self::isEmptyParameter($value)) {
                 throw self::missingParameter($parameter->getName(), $class);
             }
 
             if ($typeName === 'array') {
                 $values = \is_array($value) ? $value : \array_slice($parameters, $index);
 
-                if ($values !== [] && \array_filter($values, static fn ($item) => ! self::isEmptyParameter($item)) === []) {
+                $empty = \array_filter($values, self::isEmptyParameter(...));
+
+                // A real array can hold an empty value, as long as it is not the only kind of value.
+                if ($empty !== [] && (! \is_array($value) || \count($empty) === \count($values))) {
                     throw self::missingParameter($parameter->getName(), $class);
                 }
 
@@ -172,6 +191,8 @@ final class RuleFactory
                 $parameters[$index] = self::castBoolean($value, $class);
             } elseif ($typeName === 'int') {
                 $parameters[$index] = self::castInteger($value, $class);
+            } elseif ($typeName !== null && ! self::matchesType($value, $typeName)) {
+                throw new InvalidArgumentException('Invalid parameter ['.self::describe($value)."] for rule [{$class}].");
             }
         }
 
@@ -204,6 +225,16 @@ final class RuleFactory
         }
 
         throw new InvalidArgumentException('Invalid numeric parameter ['.self::describe($value)."] for rule [{$class}].");
+    }
+
+    private static function matchesType(mixed $value, string $type): bool
+    {
+        return match (true) {
+            $type === 'string' => \is_scalar($value) || $value instanceof Stringable,
+            $type === 'callable' => \is_callable($value),
+            \class_exists($type) || \interface_exists($type) => $value instanceof $type,
+            default => true,
+        };
     }
 
     private static function missingParameter(string $name, string $class): InvalidArgumentException
