@@ -18,3 +18,9 @@ jobs:
     uses: datalogix/workflows/.github/workflows/package.yml@v2
     # Only CODECOV_TOKEN is used, for coverage reports
     secrets: inherit
+    # All inputs are optional:
+    # with:
+    #   laravel: '["^11.0", "^12.0", "^13.0"]'
+    #   php: '["8.3", "8.4", "8.5"]'
+    #   pint: false
+    #   min-coverage: 90   # 100 by default; 0 turns the coverage check off
