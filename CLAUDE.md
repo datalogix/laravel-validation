@@ -5,7 +5,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ```bash
-composer test                              # run the Pest suite (prints coverage, writes clover.xml)
+composer test                              # run the Pest suite (writes clover.xml)
+composer test -- --coverage                # also print the coverage summary
 vendor/bin/pest --no-coverage              # faster run without coverage
 vendor/bin/pest --filter "implicit rules"  # run a single test
 composer lint                              # check style (Pint --test) and static analysis (Larastan)
@@ -82,14 +83,7 @@ These throw `InvalidArgumentException`:
 
 ### `length` messages
 
-`Validator::lengthMessage()` chooses the key, unless the application replaced the `length` message. The application's `validation.length_*` line wins over the package one.
-
-| Bounds | Inclusive | Exclusive (`length:10,20,false`) |
-| --- | --- | --- |
-| Both | `length` | `length_exclusive` |
-| Minimum only (`length:10`) | `length_min` | `length_min_exclusive` |
-| Maximum only (`length:,5`) | `length_max` | `length_max_exclusive` |
-| None (`length`) | `length_unbounded` | — |
+`Validator::lengthMessage()` chooses the key from the bounds (see the table in the README, "The `length` rule"), unless the application replaced the `length` message. The application's `validation.length_*` line wins over the package one.
 
 ### Placeholders
 
