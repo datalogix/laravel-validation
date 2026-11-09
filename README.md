@@ -51,7 +51,7 @@ $request->validate([
 - `notBlank`, `notEmpty` and `notOptional` also run on empty or missing values.
 
 > [!NOTE]
-> Laravel's built-in rules (`email`, `regex`, `json`, `min`, `max`, `in`, `exists`, `unique`, `contains`, `base64` on Laravel 13, etc.) and rules registered with `Validator::extend()` always take precedence over Respect rules with the same name. Use `fileExists` for Respect's `exists` rule.
+> Laravel's built-in rules (`email`, `regex`, `json`, `min`, `max`, `in`, `exists`, `unique`, `file`, `image`, `lowercase`, `uppercase`, `ends_with`, `contains`, `base64` on Laravel 13, etc.) and rules registered with `Validator::extend()` always take precedence over Respect rules with the same name. Use `fileExists` for Respect's `exists` rule.
 >
 > Laravel also turns `int` and `bool` into `integer` and `boolean`; use `intVal` and `boolType` for the Respect rules.
 

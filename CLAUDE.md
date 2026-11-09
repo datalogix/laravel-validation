@@ -83,7 +83,7 @@ These throw `InvalidArgumentException`:
 
 ### `length` messages
 
-`Validator::lengthMessage()` chooses the key from the bounds (see the table in the README, "The `length` rule"), unless the application replaced the `length` message. The application's `validation.length_*` line wins over the package one.
+`Validator::lengthMessage()` chooses the key from the bounds (see the table in the README, "The `length` rule"; update it when the choice changes), unless the application replaced the `length` message. The application's `validation.length_*` line wins over the package one.
 
 ### Placeholders
 

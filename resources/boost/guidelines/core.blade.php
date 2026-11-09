@@ -17,7 +17,7 @@ $request->validate([
 
 ### Rule resolution
 
-- Laravel's built-in rules and rules registered with `Validator::extend()` take precedence over Respect rules with the same name (`email`, `regex`, `json`, `min`, `max`, `in`, `exists`, `contains`, and `base64` on Laravel 13). Use `fileExists` for Respect's `exists` rule.
+- Laravel's built-in rules and rules registered with `Validator::extend()` take precedence over Respect rules with the same name (`email`, `regex`, `json`, `min`, `max`, `in`, `exists`, `file`, `image`, `lowercase`, `uppercase`, `ends_with`, `contains`, and `base64` on Laravel 13). Use `fileExists` for Respect's `exists` rule.
 - Laravel turns `int` and `bool` into `integer` and `boolean`. Use `intVal` and `boolType` for the Respect rules.
 - Rules that require other rules or objects (`each`, `not`, `allOf`, `key` with an inner rule) are not available as string rules. Use Laravel's `array.*` syntax or a custom `Rule` instead.
 - `notBlank`, `notEmpty` and `notOptional` also run on empty or missing values.
@@ -29,6 +29,7 @@ Parameters are passed to the rule constructor in order and converted to its type
 
 - Booleans accept `true`/`false`, `1`/`0`, `on`/`off` and `yes`/`no` (`domain:false`).
 - Numbers must be valid integers: `length:abc` and `length:5.5` throw.
+- A value of the wrong type throws (`key:foo,bar`).
 - An empty value or `null` skips a nullable parameter (`length:,5`). `length:,`, `extension:,` and `subset:a,` throw.
 - For an array parameter, the remaining parameters become the array (`containsAny:foo,bar`). Parameters after it can only be set with the array rule syntax.
 
@@ -49,6 +50,6 @@ $request->validate([
 ### Error messages
 
 - The package ships messages in `en` and `pt_BR`. To override one, add the snake_case rule name to `lang/{locale}/validation.php` (`'video_url' => 'The :attribute field must be a video URL.'`).
-- `uploaded` keeps the package message even when `validation.uploaded` is defined in `en` or `pt_BR`, because Laravel's lang files define that line as "failed to upload". Override it with an inline or `custom` message, or with the published package translations.
+- `uploaded` keeps the package message even when `validation.uploaded` is defined in `en` or `pt_BR`, because Laravel's lang files define that line as "failed to upload". Override it with an inline or `custom` message, or with the published package translations. In a locale the package does not ship, a `validation.uploaded` line keeps Laravel's "failed to upload" meaning.
 - To publish the package translations, run `php artisan vendor:publish --tag=laravel-validation-lang`.
 - Placeholders: `:value` and `:min` are the first parameter, `:max` is the second (or the first when there is only one), and `:values` is all parameters joined by commas.
