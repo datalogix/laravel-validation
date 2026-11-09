@@ -27,6 +27,7 @@ Thumbs.db
 /.claude/settings.local.json
 /.claude/worktrees/
 
+/phpstan.neon
 /phpunit.xml
 
 /package-lock.json

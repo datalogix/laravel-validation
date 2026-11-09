@@ -15,7 +15,7 @@ composer format                            # format with Laravel Pint
 ## Project setup
 
 - **Tests:** Pest on `orchestra/testbench`. `tests/Pest.php` binds `tests/TestCase.php`, which registers `ValidationServiceProvider` and provides a `validate($data, $rules, $messages)` helper.
-- **Static analysis:** Larastan at level 5 (`phpstan.neon`, `src` only).
+- **Static analysis:** Larastan at level 5 (`phpstan.neon.dist`, `src` only).
 - **CI:** `.github/workflows/datalogix.yml`, which calls `datalogix/workflows/.github/workflows/package.yml@v2` (runs `composer test`, Pint and PHPStan).
 - **Supported:** PHP ^8.2, Laravel 12 and 13, respect/validation ^2.5.
 - **Issues and pull requests:** English.
