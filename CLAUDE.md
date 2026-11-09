@@ -45,13 +45,13 @@ The package exposes every [Respect Validation](https://respect-validation.readth
 
 String parameters are cast to the constructor types:
 
-| Parameter type | Conversion |
-| --- | --- |
-| Nullable | `""`/`"null"` (any case) → `null` |
-| `bool` | Values accepted by `FILTER_VALIDATE_BOOLEAN` (`true`/`false`, `1`/`0`, `on`/`off`, `yes`/`no`, any case) → bool |
-| `int` | Numeric values → `int` (`length:1e1` is 10) |
-| `array` | The remaining parameters become the array (`containsAny:a,b`); a real array from the array rule syntax is used as is |
-| Untyped | Accepts empty values, so `equals:` compares with an empty value |
+| Parameter type | Conversion                                                                                                           |
+| -------------- | -------------------------------------------------------------------------------------------------------------------- |
+| Nullable       | `""`/`"null"` (any case) → `null`                                                                                    |
+| `bool`         | Values accepted by `FILTER_VALIDATE_BOOLEAN` (`true`/`false`, `1`/`0`, `on`/`off`, `yes`/`no`, any case) → bool      |
+| `int`          | Numeric values → `int` (`length:1e1` is 10)                                                                          |
+| `array`        | The remaining parameters become the array (`containsAny:a,b`); a real array from the array rule syntax is used as is |
+| Untyped        | Accepts empty values, so `equals:` compares with an empty value                                                      |
 
 Later parameters after an array, such as `containsAny`'s `$identical`, can only be set through the array rule syntax (`[['containsAny', ['a'], true]]`).
 

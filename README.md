@@ -25,10 +25,10 @@ The package will automatically register itself.
 
 Some rules need optional dependencies:
 
-| Rule | Requires |
-| --- | --- |
-| `iban` | `ext-bcmath` |
-| `mimetype` | `ext-fileinfo` |
+| Rule                                     | Requires                                               |
+| ---------------------------------------- | ------------------------------------------------------ |
+| `iban`                                   | `ext-bcmath`                                           |
+| `mimetype`                               | `ext-fileinfo`                                         |
 | `phone` with a country code (`phone:BR`) | `composer require giggsey/libphonenumber-for-php-lite` |
 
 ## Usage
@@ -56,20 +56,19 @@ $request->validate([
 > Laravel also turns `int` and `bool` into `integer` and `boolean`; use `intVal` and `boolType` for the Respect rules.
 
 > [!WARNING]
-> This package registers a custom validator resolver. If another package also
-> calls `Validator::resolver()`, only the last one registered will be used.
+> This package registers a custom validator resolver. If another package also calls `Validator::resolver()`, only the last one registered will be used.
 
 ### Rule parameters
 
 Parameters are passed to the rule constructor, in order, and converted to its types:
 
-| Parameter type | Accepted values | Example |
-| --- | --- | --- |
-| Boolean | `true`/`false`, `1`/`0`, `on`/`off`, `yes`/`no` | `domain:false` |
-| Numeric | Numbers | `length:1e1` is 10 |
-| Nullable | An empty value or `null` (any case) skips the parameter | `length:,5` |
-| Array | The remaining parameters become the array | `containsAny:foo,bar`, `subset:a,b` |
-| Untyped | Any value, including an empty one | `equals:` compares with an empty value |
+| Parameter type | Accepted values                                         | Example                                |
+| -------------- | ------------------------------------------------------- | -------------------------------------- |
+| Boolean        | `true`/`false`, `1`/`0`, `on`/`off`, `yes`/`no`         | `domain:false`                         |
+| Numeric        | Numbers                                                 | `length:1e1` is 10                     |
+| Nullable       | An empty value or `null` (any case) skips the parameter | `length:,5`                            |
+| Array          | The remaining parameters become the array               | `containsAny:foo,bar`, `subset:a,b`    |
+| Untyped        | Any value, including an empty one                       | `equals:` compares with an empty value |
 
 An array given through the array rule syntax is used as is (`[['subset', ['a', 'b']]]`).
 
@@ -115,12 +114,12 @@ Skipped parameters are left out of `:values` and replaced with an empty value in
 
 The message depends on the bounds, unless you replace the `length` message:
 
-| Bounds | Inclusive | Exclusive (`length:10,20,false`) |
-| --- | --- | --- |
-| Both | `length` | `length_exclusive` |
-| Minimum only (`length:10`) | `length_min` | `length_min_exclusive` |
-| Maximum only (`length:,5`) | `length_max` | `length_max_exclusive` |
-| None (`length`) | `length_unbounded` | — |
+| Bounds                     | Inclusive          | Exclusive (`length:10,20,false`) |
+| -------------------------- | ------------------ | -------------------------------- |
+| Both                       | `length`           | `length_exclusive`               |
+| Minimum only (`length:10`) | `length_min`       | `length_min_exclusive`           |
+| Maximum only (`length:,5`) | `length_max`       | `length_max_exclusive`           |
+| None (`length`)            | `length_unbounded` | —                                |
 
 You can override these messages with the same keys in your `lang/{locale}/validation.php`.
 
