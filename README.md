@@ -51,7 +51,7 @@ $request->validate([
 - `notBlank`, `notEmpty` and `notOptional` also run on empty or missing values.
 
 > [!NOTE]
-> Laravel's built-in rules (`numeric`, `email`, `regex`, `file`, `image`, `json`, `ends_with`, `lowercase`, `uppercase`, `contains`, `string`, `base64` on Laravel 13, etc.) and rules registered with `Validator::extend()` always take precedence over Respect rules with the same name.
+> Laravel's built-in rules (`email`, `regex`, `json`, `min`, `max`, `in`, `exists`, `unique`, `contains`, `base64` on Laravel 13, etc.) and rules registered with `Validator::extend()` always take precedence over Respect rules with the same name. Use `fileExists` for Respect's `exists` rule.
 >
 > Laravel also turns `int` and `bool` into `integer` and `boolean`; use `intVal` and `boolType` for the Respect rules.
 
@@ -77,6 +77,7 @@ These throw an `InvalidArgumentException`:
 
 - Any other value for a boolean parameter, including an empty one.
 - Invalid numbers and integers out of range (`length:abc`, `length:5.5`).
+- A value of the wrong type (`key:foo,bar`).
 - An empty value for any other typed parameter (`extension:,`, `countryCode:,`).
 - An empty item in a list (`subset:a,`).
 - `length` with both bounds empty (`length:,`).
@@ -87,7 +88,7 @@ The package ships with error messages in English (`en`) and Brazilian Portuguese
 
 ### Overriding messages
 
-Messages defined in your application's `lang/{locale}/validation.php` take precedence, so you can override any of them:
+Messages defined in your application's `lang/{locale}/validation.php` take precedence (except for `uploaded`, see below), so you can override them:
 
 ```php
 // lang/en/validation.php

@@ -17,7 +17,7 @@ $request->validate([
 
 ### Rule resolution
 
-- Laravel's built-in rules and rules registered with `Validator::extend()` take precedence over Respect rules with the same name (`email`, `numeric`, `regex`, `json`, `contains`, and `base64` on Laravel 13).
+- Laravel's built-in rules and rules registered with `Validator::extend()` take precedence over Respect rules with the same name (`email`, `regex`, `json`, `min`, `max`, `in`, `exists`, `contains`, and `base64` on Laravel 13). Use `fileExists` for Respect's `exists` rule.
 - Laravel turns `int` and `bool` into `integer` and `boolean`. Use `intVal` and `boolType` for the Respect rules.
 - Rules that require other rules or objects (`each`, `not`, `allOf`, `key` with an inner rule) are not available as string rules. Use Laravel's `array.*` syntax or a custom `Rule` instead.
 - `notBlank`, `notEmpty` and `notOptional` also run on empty or missing values.
@@ -49,5 +49,6 @@ $request->validate([
 ### Error messages
 
 - The package ships messages in `en` and `pt_BR`. To override one, add the snake_case rule name to `lang/{locale}/validation.php` (`'video_url' => 'The :attribute field must be a video URL.'`).
+- `uploaded` keeps the package message even when `validation.uploaded` is defined in `en` or `pt_BR`, because Laravel's lang files define that line as "failed to upload". Override it with an inline or `custom` message, or with the published package translations.
 - To publish the package translations, run `php artisan vendor:publish --tag=laravel-validation-lang`.
 - Placeholders: `:value` and `:min` are the first parameter, `:max` is the second (or the first when there is only one), and `:values` is all parameters joined by commas.
