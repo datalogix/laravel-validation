@@ -2,6 +2,7 @@
 
 .DS_Store
 Thumbs.db
+*.swp
 
 /.codex/
 /.cursor/
@@ -13,8 +14,6 @@ Thumbs.db
 
 /.phpunit.cache/
 /.phpunit.result.cache
-/build/
-/coverage/
 
 /vendor/
 /node_modules/
@@ -22,13 +21,16 @@ Thumbs.db
 /composer.lock
 /composer.phar
 /clover.xml
+/build/
+/coverage/
 
 /.env
-/.claude/settings.local.json
-/.claude/worktrees/
 
 /phpstan.neon
 /phpunit.xml
 
 /package-lock.json
 /pnpm-lock.yaml
+/yarn.lock
+/bun.lock
+/bun.lockb
