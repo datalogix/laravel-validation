@@ -5,7 +5,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ```bash
-composer test                              # run the Pest suite (prints coverage, writes clover.xml)
+composer test                              # run the Pest suite (writes clover.xml)
+composer test -- --coverage                # also print the coverage summary
 vendor/bin/pest --no-coverage              # faster run without coverage
 vendor/bin/pest --filter "implicit rules"  # run a single test
 composer lint                              # check style (Pint --test) and static analysis (Larastan)
@@ -15,7 +16,7 @@ composer format                            # format with Laravel Pint
 ## Project setup
 
 - **Tests:** Pest on `orchestra/testbench`. `tests/Pest.php` binds `tests/TestCase.php`, which registers `ValidationServiceProvider` and provides a `validate($data, $rules, $messages)` helper.
-- **Static analysis:** Larastan at level 5 (`phpstan.neon`, `src` only).
+- **Static analysis:** Larastan at level 5 (`phpstan.neon.dist`, `src` only).
 - **CI:** `.github/workflows/datalogix.yml`, which calls `datalogix/workflows/.github/workflows/package.yml@v2` (runs `composer test`, Pint and PHPStan).
 - **Supported:** PHP ^8.2, Laravel 12 and 13, respect/validation ^2.5.
 - **Issues and pull requests:** English.
@@ -44,13 +45,13 @@ The package exposes every [Respect Validation](https://respect-validation.readth
 
 String parameters are cast to the constructor types:
 
-| Parameter type | Conversion |
-| --- | --- |
-| Nullable | `""`/`"null"` (any case) → `null` |
-| `bool` | Values accepted by `FILTER_VALIDATE_BOOLEAN` (`true`/`false`, `1`/`0`, `on`/`off`, `yes`/`no`, any case) → bool |
-| `int` | Numeric values → `int` (`length:1e1` is 10) |
-| `array` | The remaining parameters become the array (`containsAny:a,b`); a real array from the array rule syntax is used as is |
-| Untyped | Accepts empty values, so `equals:` compares with an empty value |
+| Parameter type | Conversion                                                                                                           |
+| -------------- | -------------------------------------------------------------------------------------------------------------------- |
+| Nullable       | `""`/`"null"` (any case) → `null`                                                                                    |
+| `bool`         | Values accepted by `FILTER_VALIDATE_BOOLEAN` (`true`/`false`, `1`/`0`, `on`/`off`, `yes`/`no`, any case) → bool      |
+| `int`          | Numeric values → `int` (`length:1e1` is 10)                                                                          |
+| `array`        | The remaining parameters become the array (`containsAny:a,b`); a real array from the array rule syntax is used as is |
+| Untyped        | Accepts empty values, so `equals:` compares with an empty value                                                      |
 
 Later parameters after an array, such as `containsAny`'s `$identical`, can only be set through the array rule syntax (`[['containsAny', ['a'], true]]`).
 
@@ -82,14 +83,7 @@ These throw `InvalidArgumentException`:
 
 ### `length` messages
 
-`Validator::lengthMessage()` chooses the key, unless the application replaced the `length` message. The application's `validation.length_*` line wins over the package one.
-
-| Bounds | Inclusive | Exclusive (`length:10,20,false`) |
-| --- | --- | --- |
-| Both | `length` | `length_exclusive` |
-| Minimum only (`length:10`) | `length_min` | `length_min_exclusive` |
-| Maximum only (`length:,5`) | `length_max` | `length_max_exclusive` |
-| None (`length`) | `length_unbounded` | — |
+`Validator::lengthMessage()` chooses the key from the bounds (see the table in the README, "The `length` rule"; update it when the choice changes), unless the application replaced the `length` message. The application's `validation.length_*` line wins over the package one.
 
 ### Placeholders
 

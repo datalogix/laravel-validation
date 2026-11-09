@@ -25,10 +25,10 @@ The package will automatically register itself.
 
 Some rules need optional dependencies:
 
-| Rule | Requires |
-| --- | --- |
-| `iban` | `ext-bcmath` |
-| `mimetype` | `ext-fileinfo` |
+| Rule                                     | Requires                                               |
+| ---------------------------------------- | ------------------------------------------------------ |
+| `iban`                                   | `ext-bcmath`                                           |
+| `mimetype`                               | `ext-fileinfo`                                         |
 | `phone` with a country code (`phone:BR`) | `composer require giggsey/libphonenumber-for-php-lite` |
 
 ## Usage
@@ -51,25 +51,24 @@ $request->validate([
 - `notBlank`, `notEmpty` and `notOptional` also run on empty or missing values.
 
 > [!NOTE]
-> Laravel's built-in rules (`numeric`, `email`, `regex`, `file`, `image`, `json`, `ends_with`, `lowercase`, `uppercase`, `contains`, `string`, `base64` on Laravel 13, etc.) and rules registered with `Validator::extend()` always take precedence over Respect rules with the same name.
+> Laravel's built-in rules (`email`, `regex`, `json`, `min`, `max`, `in`, `exists`, `unique`, `file`, `image`, `lowercase`, `uppercase`, `ends_with`, `contains`, `base64` on Laravel 13, etc.) and rules registered with `Validator::extend()` always take precedence over Respect rules with the same name. Use `fileExists` for Respect's `exists` rule.
 >
 > Laravel also turns `int` and `bool` into `integer` and `boolean`; use `intVal` and `boolType` for the Respect rules.
 
 > [!WARNING]
-> This package registers a custom validator resolver. If another package also
-> calls `Validator::resolver()`, only the last one registered will be used.
+> This package registers a custom validator resolver. If another package also calls `Validator::resolver()`, only the last one registered will be used.
 
 ### Rule parameters
 
 Parameters are passed to the rule constructor, in order, and converted to its types:
 
-| Parameter type | Accepted values | Example |
-| --- | --- | --- |
-| Boolean | `true`/`false`, `1`/`0`, `on`/`off`, `yes`/`no` | `domain:false` |
-| Numeric | Numbers | `length:1e1` is 10 |
-| Nullable | An empty value or `null` (any case) skips the parameter | `length:,5` |
-| Array | The remaining parameters become the array | `containsAny:foo,bar`, `subset:a,b` |
-| Untyped | Any value, including an empty one | `equals:` compares with an empty value |
+| Parameter type | Accepted values                                         | Example                                |
+| -------------- | ------------------------------------------------------- | -------------------------------------- |
+| Boolean        | `true`/`false`, `1`/`0`, `on`/`off`, `yes`/`no`         | `domain:false`                         |
+| Numeric        | Numbers                                                 | `length:1e1` is 10                     |
+| Nullable       | An empty value or `null` (any case) skips the parameter | `length:,5`                            |
+| Array          | The remaining parameters become the array               | `containsAny:foo,bar`, `subset:a,b`    |
+| Untyped        | Any value, including an empty one                       | `equals:` compares with an empty value |
 
 An array given through the array rule syntax is used as is (`[['subset', ['a', 'b']]]`).
 
@@ -77,6 +76,7 @@ These throw an `InvalidArgumentException`:
 
 - Any other value for a boolean parameter, including an empty one.
 - Invalid numbers and integers out of range (`length:abc`, `length:5.5`).
+- A value of the wrong type (`key:foo,bar`).
 - An empty value for any other typed parameter (`extension:,`, `countryCode:,`).
 - An empty item in a list (`subset:a,`).
 - `length` with both bounds empty (`length:,`).
@@ -87,7 +87,7 @@ The package ships with error messages in English (`en`) and Brazilian Portuguese
 
 ### Overriding messages
 
-Messages defined in your application's `lang/{locale}/validation.php` take precedence, so you can override any of them:
+Messages defined in your application's `lang/{locale}/validation.php` take precedence (except for `uploaded`, see below), so you can override them:
 
 ```php
 // lang/en/validation.php
@@ -114,12 +114,12 @@ Skipped parameters are left out of `:values` and replaced with an empty value in
 
 The message depends on the bounds, unless you replace the `length` message:
 
-| Bounds | Inclusive | Exclusive (`length:10,20,false`) |
-| --- | --- | --- |
-| Both | `length` | `length_exclusive` |
-| Minimum only (`length:10`) | `length_min` | `length_min_exclusive` |
-| Maximum only (`length:,5`) | `length_max` | `length_max_exclusive` |
-| None (`length`) | `length_unbounded` | — |
+| Bounds                     | Inclusive          | Exclusive (`length:10,20,false`) |
+| -------------------------- | ------------------ | -------------------------------- |
+| Both                       | `length`           | `length_exclusive`               |
+| Minimum only (`length:10`) | `length_min`       | `length_min_exclusive`           |
+| Maximum only (`length:,5`) | `length_max`       | `length_max_exclusive`           |
+| None (`length`)            | `length_unbounded` | —                                |
 
 You can override these messages with the same keys in your `lang/{locale}/validation.php`.
 
