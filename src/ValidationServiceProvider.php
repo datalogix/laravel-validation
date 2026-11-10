@@ -18,7 +18,7 @@ class ValidationServiceProvider extends ServiceProvider
 
         if ($this->app->runningInConsole()) {
             $this->publishes([
-                __DIR__.'/../lang' => $this->app->langPath('vendor/laravel-validation'),
+                __DIR__.'/../lang' => lang_path('vendor/laravel-validation'),
             ], 'laravel-validation-lang');
         }
 
