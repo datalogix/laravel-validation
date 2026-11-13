@@ -9,8 +9,8 @@ composer test                              # run the Pest suite (writes clover.x
 composer test -- --coverage                # also print the coverage summary
 vendor/bin/pest --no-coverage              # faster run without coverage
 vendor/bin/pest --filter "implicit rules"  # run a single test
-composer lint                              # check style (Pint --test) and static analysis (Larastan)
-composer format                            # format with Laravel Pint
+composer lint                              # check style (Pint --test), static analysis (Larastan) and Rector (--dry-run)
+composer format                            # apply Rector, then format with Laravel Pint
 ```
 
 ## Project setup
