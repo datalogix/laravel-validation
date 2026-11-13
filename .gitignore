@@ -18,7 +18,6 @@ Thumbs.db
 /vendor/
 /node_modules/
 
-/composer.lock
 /composer.phar
 /clover.xml
 /build/
@@ -28,9 +27,3 @@ Thumbs.db
 
 /phpstan.neon
 /phpunit.xml
-
-/package-lock.json
-/pnpm-lock.yaml
-/yarn.lock
-/bun.lock
-/bun.lockb

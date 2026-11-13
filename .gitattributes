@@ -6,6 +6,13 @@
 *.php diff=php
 *.blade.php diff=html
 
+*.gif binary
+*.ico binary
+*.jpg binary
+*.png binary
+
+/composer.lock linguist-generated=true
+
 /.ai export-ignore
 /.claude export-ignore
 /.editorconfig export-ignore
@@ -21,8 +28,7 @@
 /UPGRADE.md export-ignore
 /composer.lock export-ignore
 /docs export-ignore
-/package-lock.json export-ignore
-/package.json export-ignore
+/phpstan-baseline.neon export-ignore
 /phpstan.neon* export-ignore
 /phpunit.xml* export-ignore
 /pint.json export-ignore
