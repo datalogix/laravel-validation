@@ -33,7 +33,7 @@ class Validator extends BaseValidator
     ) {
         parent::__construct($translator, $data, $rules, $messages, $attributes);
 
-        $this->implicitRules = \array_merge($this->implicitRules, self::IMPLICIT_RULES);
+        $this->implicitRules = \array_merge($this->implicitRules, static::IMPLICIT_RULES);
     }
 
     public function __call($method, $parameters)
@@ -62,7 +62,7 @@ class Validator extends BaseValidator
         $key = 'validation.'.Str::snake($rule);
 
         $isDefault = $message === $key
-            || (\in_array($rule, self::FRAMEWORK_KEY_RULES, true)
+            || (\in_array($rule, static::FRAMEWORK_KEY_RULES, true)
                 && $message === $this->translator->get($key)
                 && ! $this->keepsApplicationLine($key));
 
