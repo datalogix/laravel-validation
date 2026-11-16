@@ -10,11 +10,11 @@ use Respect\Validation\Rules\Length;
 use Respect\Validation\Validatable;
 use Stringable;
 
-final class RuleFactory
+class RuleFactory
 {
     // Laravel normalizes the "int" and "bool" string rules to Integer and Boolean,
     // so the Int and Bool aliases are only reachable through RuleFactory::make().
-    private static array $alias = [
+    protected static array $alias = [
         'Arr' => 'ArrayVal',
         'Bool' => 'BoolType',
         'Cntrl' => 'Control',
@@ -35,26 +35,26 @@ final class RuleFactory
     /**
      * @var array<string, bool>
      */
-    private static array $available = [];
+    protected static array $available = [];
 
     /**
      * @var array<string, \ReflectionParameter[]>
      */
-    private static array $constructorParameters = [];
+    protected static array $constructorParameters = [];
 
     public static function exists(string $rule): bool
     {
-        return self::$available[$rule] ??= $rule !== ''
-            && \is_subclass_of($class = self::className($rule), Validatable::class)
+        return static::$available[$rule] ??= $rule !== ''
+            && \is_subclass_of($class = static::className($rule), Validatable::class)
             && (new ReflectionClass($class))->isInstantiable()
-            && ! self::requiresObjects($class);
+            && ! static::requiresObjects($class);
     }
 
     public static function make(string $rule, array $parameters = []): Validatable
     {
-        $class = self::className($rule);
+        $class = static::className($rule);
 
-        $parameters = self::castParameters($class, $parameters);
+        $parameters = static::castParameters($class, $parameters);
 
         if ($class === Length::class && $parameters !== [] && ($parameters[0] ?? null) === null && ($parameters[1] ?? null) === null) {
             throw new InvalidArgumentException("The rule [{$class}] requires at least one bound.");
@@ -72,7 +72,7 @@ final class RuleFactory
     public static function cast(string $rule, array $parameters): array
     {
         try {
-            return self::castParameters(self::className($rule), $parameters);
+            return static::castParameters(static::className($rule), $parameters);
         } catch (InvalidArgumentException) {
             return $parameters;
         }
@@ -87,8 +87,8 @@ final class RuleFactory
      */
     public static function messageParameters(string $rule, array $parameters): array
     {
-        $constructorParameters = self::constructorParameters(self::className($rule));
-        $parameters = self::cast($rule, $parameters);
+        $constructorParameters = static::constructorParameters(static::className($rule));
+        $parameters = static::cast($rule, $parameters);
 
         if (! \end($constructorParameters) || ! \end($constructorParameters)->isVariadic()) {
             $parameters = \array_slice($parameters, 0, \count($constructorParameters));
@@ -117,9 +117,9 @@ final class RuleFactory
      * Determine if the rule constructor requires objects (e.g. other rules),
      * which cannot be given through a string rule like "each:...".
      */
-    private static function requiresObjects(string $class): bool
+    protected static function requiresObjects(string $class): bool
     {
-        foreach (self::constructorParameters($class) as $parameter) {
+        foreach (static::constructorParameters($class) as $parameter) {
             $type = $parameter->getType();
 
             if ($type instanceof ReflectionNamedType
@@ -139,9 +139,9 @@ final class RuleFactory
      * already an array. Empty typed parameters and invalid values throw an exception, while
      * untyped parameters accept anything, because an empty value can be what they compare to.
      */
-    private static function castParameters(string $class, array $parameters): array
+    protected static function castParameters(string $class, array $parameters): array
     {
-        foreach (self::constructorParameters($class) as $index => $parameter) {
+        foreach (static::constructorParameters($class) as $index => $parameter) {
             if (! \array_key_exists($index, $parameters)) {
                 break;
             }
@@ -153,31 +153,31 @@ final class RuleFactory
             if ($parameter->isVariadic()) {
                 $values = \array_slice($parameters, $index);
 
-                if ($type !== null && ! $type->allowsNull() && \array_filter($values, self::isEmptyParameter(...)) !== []) {
-                    throw self::missingParameter($parameter->getName(), $class);
+                if ($type !== null && ! $type->allowsNull() && \array_filter($values, static::isEmptyParameter(...)) !== []) {
+                    throw static::missingParameter($parameter->getName(), $class);
                 }
 
                 break;
             }
 
-            if ($type?->allowsNull() && self::isNullParameter($value)) {
+            if ($type?->allowsNull() && static::isNullParameter($value)) {
                 $parameters[$index] = null;
 
                 continue;
             }
 
-            if ($type !== null && self::isEmptyParameter($value)) {
-                throw self::missingParameter($parameter->getName(), $class);
+            if ($type !== null && static::isEmptyParameter($value)) {
+                throw static::missingParameter($parameter->getName(), $class);
             }
 
             if ($typeName === 'array') {
                 $values = \is_array($value) ? $value : \array_slice($parameters, $index);
 
-                $empty = \array_filter($values, self::isEmptyParameter(...));
+                $empty = \array_filter($values, static::isEmptyParameter(...));
 
                 // A real array can hold an empty value, as long as it is not the only kind of value.
                 if ($empty !== [] && (! \is_array($value) || \count($empty) === \count($values))) {
-                    throw self::missingParameter($parameter->getName(), $class);
+                    throw static::missingParameter($parameter->getName(), $class);
                 }
 
                 if (\is_array($value)) {
@@ -188,18 +188,18 @@ final class RuleFactory
             }
 
             if ($typeName === 'bool') {
-                $parameters[$index] = self::castBoolean($value, $class);
+                $parameters[$index] = static::castBoolean($value, $class);
             } elseif ($typeName === 'int') {
-                $parameters[$index] = self::castInteger($value, $class);
-            } elseif ($typeName !== null && ! self::matchesType($value, $typeName)) {
-                throw new InvalidArgumentException('Invalid parameter ['.self::describe($value)."] for rule [{$class}].");
+                $parameters[$index] = static::castInteger($value, $class);
+            } elseif ($typeName !== null && ! static::matchesType($value, $typeName)) {
+                throw new InvalidArgumentException('Invalid parameter ['.static::describe($value)."] for rule [{$class}].");
             }
         }
 
         return $parameters;
     }
 
-    private static function castBoolean(mixed $value, string $class): bool
+    protected static function castBoolean(mixed $value, string $class): bool
     {
         if (\is_bool($value)) {
             return $value;
@@ -209,10 +209,10 @@ final class RuleFactory
             ? \filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE)
             : null;
 
-        return $boolean ?? throw new InvalidArgumentException('Invalid boolean parameter ['.self::describe($value)."] for rule [{$class}].");
+        return $boolean ?? throw new InvalidArgumentException('Invalid boolean parameter ['.static::describe($value)."] for rule [{$class}].");
     }
 
-    private static function castInteger(mixed $value, string $class): int
+    protected static function castInteger(mixed $value, string $class): int
     {
         $number = \is_numeric($value) ? $value + 0 : null;
 
@@ -224,10 +224,10 @@ final class RuleFactory
             return (int) $number;
         }
 
-        throw new InvalidArgumentException('Invalid numeric parameter ['.self::describe($value)."] for rule [{$class}].");
+        throw new InvalidArgumentException('Invalid numeric parameter ['.static::describe($value)."] for rule [{$class}].");
     }
 
-    private static function matchesType(mixed $value, string $type): bool
+    protected static function matchesType(mixed $value, string $type): bool
     {
         return match (true) {
             $type === 'string' => \is_scalar($value) || $value instanceof Stringable,
@@ -237,17 +237,17 @@ final class RuleFactory
         };
     }
 
-    private static function missingParameter(string $name, string $class): InvalidArgumentException
+    protected static function missingParameter(string $name, string $class): InvalidArgumentException
     {
         return new InvalidArgumentException("Missing parameter [{$name}] for rule [{$class}].");
     }
 
-    private static function describe(mixed $value): string
+    protected static function describe(mixed $value): string
     {
         return \is_scalar($value) ? (string) $value : \get_debug_type($value);
     }
 
-    private static function isEmptyParameter(mixed $value): bool
+    protected static function isEmptyParameter(mixed $value): bool
     {
         return $value === null || $value === '';
     }
@@ -255,21 +255,21 @@ final class RuleFactory
     /**
      * Determine if the string parameter means "no value" for a nullable parameter.
      */
-    private static function isNullParameter(mixed $value): bool
+    protected static function isNullParameter(mixed $value): bool
     {
-        return self::isEmptyParameter($value) || (\is_string($value) && \strtolower($value) === 'null');
+        return static::isEmptyParameter($value) || (\is_string($value) && \strtolower($value) === 'null');
     }
 
     /**
      * @return \ReflectionParameter[]
      */
-    private static function constructorParameters(string $class): array
+    protected static function constructorParameters(string $class): array
     {
-        return self::$constructorParameters[$class] ??= (new ReflectionClass($class))->getConstructor()?->getParameters() ?? [];
+        return static::$constructorParameters[$class] ??= (new ReflectionClass($class))->getConstructor()?->getParameters() ?? [];
     }
 
-    private static function className(string $rule): string
+    protected static function className(string $rule): string
     {
-        return 'Respect\\Validation\\Rules\\'.(self::$alias[$rule] ?? $rule);
+        return 'Respect\\Validation\\Rules\\'.(static::$alias[$rule] ?? $rule);
     }
 }
