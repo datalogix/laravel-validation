@@ -7,7 +7,7 @@ use Illuminate\Support\Str;
 use Illuminate\Translation\Translator as LaravelTranslator;
 use Illuminate\Validation\Validator as BaseValidator;
 
-final class Validator extends BaseValidator
+class Validator extends BaseValidator
 {
     /**
      * The Respect rules that must run even when the attribute is empty.

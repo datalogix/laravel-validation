@@ -10,7 +10,7 @@ use Respect\Validation\Rules\Length;
 use Respect\Validation\Validatable;
 use Stringable;
 
-final class RuleFactory
+class RuleFactory
 {
     // Laravel normalizes the "int" and "bool" string rules to Integer and Boolean,
     // so the Int and Bool aliases are only reachable through RuleFactory::make().
