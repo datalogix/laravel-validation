@@ -14,7 +14,7 @@ class RuleFactory
 {
     // Laravel normalizes the "int" and "bool" string rules to Integer and Boolean,
     // so the Int and Bool aliases are only reachable through RuleFactory::make().
-    private static array $alias = [
+    protected static array $alias = [
         'Arr' => 'ArrayVal',
         'Bool' => 'BoolType',
         'Cntrl' => 'Control',
@@ -35,12 +35,12 @@ class RuleFactory
     /**
      * @var array<string, bool>
      */
-    private static array $available = [];
+    protected static array $available = [];
 
     /**
      * @var array<string, \ReflectionParameter[]>
      */
-    private static array $constructorParameters = [];
+    protected static array $constructorParameters = [];
 
     public static function exists(string $rule): bool
     {
@@ -117,7 +117,7 @@ class RuleFactory
      * Determine if the rule constructor requires objects (e.g. other rules),
      * which cannot be given through a string rule like "each:...".
      */
-    private static function requiresObjects(string $class): bool
+    protected static function requiresObjects(string $class): bool
     {
         foreach (self::constructorParameters($class) as $parameter) {
             $type = $parameter->getType();
@@ -139,7 +139,7 @@ class RuleFactory
      * already an array. Empty typed parameters and invalid values throw an exception, while
      * untyped parameters accept anything, because an empty value can be what they compare to.
      */
-    private static function castParameters(string $class, array $parameters): array
+    protected static function castParameters(string $class, array $parameters): array
     {
         foreach (self::constructorParameters($class) as $index => $parameter) {
             if (! \array_key_exists($index, $parameters)) {
@@ -199,7 +199,7 @@ class RuleFactory
         return $parameters;
     }
 
-    private static function castBoolean(mixed $value, string $class): bool
+    protected static function castBoolean(mixed $value, string $class): bool
     {
         if (\is_bool($value)) {
             return $value;
@@ -212,7 +212,7 @@ class RuleFactory
         return $boolean ?? throw new InvalidArgumentException('Invalid boolean parameter ['.self::describe($value)."] for rule [{$class}].");
     }
 
-    private static function castInteger(mixed $value, string $class): int
+    protected static function castInteger(mixed $value, string $class): int
     {
         $number = \is_numeric($value) ? $value + 0 : null;
 
@@ -227,7 +227,7 @@ class RuleFactory
         throw new InvalidArgumentException('Invalid numeric parameter ['.self::describe($value)."] for rule [{$class}].");
     }
 
-    private static function matchesType(mixed $value, string $type): bool
+    protected static function matchesType(mixed $value, string $type): bool
     {
         return match (true) {
             $type === 'string' => \is_scalar($value) || $value instanceof Stringable,
@@ -237,17 +237,17 @@ class RuleFactory
         };
     }
 
-    private static function missingParameter(string $name, string $class): InvalidArgumentException
+    protected static function missingParameter(string $name, string $class): InvalidArgumentException
     {
         return new InvalidArgumentException("Missing parameter [{$name}] for rule [{$class}].");
     }
 
-    private static function describe(mixed $value): string
+    protected static function describe(mixed $value): string
     {
         return \is_scalar($value) ? (string) $value : \get_debug_type($value);
     }
 
-    private static function isEmptyParameter(mixed $value): bool
+    protected static function isEmptyParameter(mixed $value): bool
     {
         return $value === null || $value === '';
     }
@@ -255,7 +255,7 @@ class RuleFactory
     /**
      * Determine if the string parameter means "no value" for a nullable parameter.
      */
-    private static function isNullParameter(mixed $value): bool
+    protected static function isNullParameter(mixed $value): bool
     {
         return self::isEmptyParameter($value) || (\is_string($value) && \strtolower($value) === 'null');
     }
@@ -263,12 +263,12 @@ class RuleFactory
     /**
      * @return \ReflectionParameter[]
      */
-    private static function constructorParameters(string $class): array
+    protected static function constructorParameters(string $class): array
     {
         return self::$constructorParameters[$class] ??= (new ReflectionClass($class))->getConstructor()?->getParameters() ?? [];
     }
 
-    private static function className(string $rule): string
+    protected static function className(string $rule): string
     {
         return 'Respect\\Validation\\Rules\\'.(self::$alias[$rule] ?? $rule);
     }

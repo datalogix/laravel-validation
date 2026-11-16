@@ -14,7 +14,7 @@ class Validator extends BaseValidator
      *
      * @var string[]
      */
-    private const IMPLICIT_RULES = ['NotBlank', 'NotEmpty', 'NotOptional'];
+    protected const IMPLICIT_RULES = ['NotBlank', 'NotEmpty', 'NotOptional'];
 
     /**
      * The Respect rules whose message key also exists in Laravel's validation lines,
@@ -22,7 +22,7 @@ class Validator extends BaseValidator
      *
      * @var string[]
      */
-    private const FRAMEWORK_KEY_RULES = ['Uploaded'];
+    protected const FRAMEWORK_KEY_RULES = ['Uploaded'];
 
     public function __construct(
         Translator $translator,
@@ -116,7 +116,7 @@ class Validator extends BaseValidator
      * the "greater than" or "less than" message when the bounds are exclusive, and
      * the "measurable" message without bounds, unless the application replaced the package message.
      */
-    private function lengthMessage(string $message, array $parameters): string
+    protected function lengthMessage(string $message, array $parameters): string
     {
         if ($message !== $this->translator->get('laravel-validation::validation.length')) {
             return $message;
@@ -141,7 +141,7 @@ class Validator extends BaseValidator
     /**
      * Determine if the line was defined for the current locale, which the package does not ship.
      */
-    private function keepsApplicationLine(string $key): bool
+    protected function keepsApplicationLine(string $key): bool
     {
         return $this->translator instanceof LaravelTranslator
             && $this->translator->hasForLocale($key)
@@ -151,7 +151,7 @@ class Validator extends BaseValidator
     /**
      * Determine if the given rule is handled by Respect Validation.
      */
-    private function isRespectRule(string $rule): bool
+    protected function isRespectRule(string $rule): bool
     {
         return ! \method_exists($this, 'validate'.$rule)
             && ! isset($this->extensions[Str::snake($rule)])
