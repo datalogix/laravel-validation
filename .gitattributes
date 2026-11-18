@@ -6,12 +6,22 @@
 *.php diff=php
 *.blade.php diff=html
 
+*.avif binary
+*.eot binary
 *.gif binary
 *.ico binary
+*.jpeg binary
 *.jpg binary
+*.otf binary
+*.pdf binary
 *.png binary
+*.ttf binary
+*.webp binary
+*.woff binary
+*.woff2 binary
 
 /composer.lock linguist-generated=true
+/package-lock.json linguist-generated=true
 
 /.ai export-ignore
 /.claude export-ignore
@@ -20,6 +30,9 @@
 /.gitattributes export-ignore
 /.github export-ignore
 /.gitignore export-ignore
+/.prettierignore export-ignore
+/.prettierrc* export-ignore
+/AGENTS.md export-ignore
 /CHANGELOG.md export-ignore
 /CLAUDE.md export-ignore
 /CONTRIBUTING.md export-ignore
@@ -28,6 +41,9 @@
 /UPGRADE.md export-ignore
 /composer.lock export-ignore
 /docs export-ignore
+/eslint.config* export-ignore
+/package-lock.json export-ignore
+/package.json export-ignore
 /phpstan-baseline.neon export-ignore
 /phpstan.neon* export-ignore
 /phpunit.xml* export-ignore
@@ -35,4 +51,7 @@
 /rector.php export-ignore
 /testbench.yaml export-ignore
 /tests export-ignore
+/tsconfig*.json export-ignore
+/types export-ignore
+/vitest.config* export-ignore
 /workbench export-ignore
